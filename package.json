@@ -4,13 +4,31 @@
   "description": "Track GitHub commits and send Telegram notifications",
   "main": "dist/index.js",
   "type": "module",
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "tsx src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "track": "tsx src/index.ts",
-    "test": "tsx src/test-connection.ts",
-    "test:connection": "tsx src/test-connection.ts"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "cli:dev": "turbo run dev --filter=@repo/cli",
+    "cli:build": "turbo run build --filter=@repo/cli",
+    "cli:start": "turbo run start --filter=@repo/cli",
+    "track": "turbo run track --filter=@repo/cli",
+    "track:clean": "turbo run track:clean --filter=@repo/cli",
+    "demo": "turbo run demo --filter=@repo/cli",
+    "demo:clean": "turbo run demo:clean --filter=@repo/cli",
+    "test:connection": "tsx scripts/test-connection.ts",
+    "test:clean": "./scripts/run.sh tsx scripts/test-connection.ts",
+    "db:setup": "npx tsx scripts/setup-db.ts",
+    "db:verify": "npx tsx scripts/verify-db.ts",
+    "dev:tracker": "turbo run dev --filter=@repo/cli",
+    "build:tracker": "turbo run build --filter=@repo/cli"
   },
   "keywords": [
     "github",
@@ -21,15 +39,18 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "octokit": "^4.0.2",
-    "telegraf": "^4.16.3",
-    "lowdb": "^7.0.1",
     "dotenv": "^16.4.7",
+    "lowdb": "^7.0.1",
+    "octokit": "^4.0.2",
+    "pg": "^8.16.3",
+    "telegraf": "^4.16.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "typescript": "^5.7.2",
-    "tsx": "^4.19.2"
+    "@types/pg": "^8.15.6",
+    "tsx": "^4.19.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
   }
 }
