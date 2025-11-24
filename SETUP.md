@@ -1,47 +1,47 @@
 # 🚀 Setup Guide - GitHub Commit Tracker
 
-Hướng dẫn setup chi tiết từ đầu đến cuối.
+Detailed setup guide from start to finish.
 
-## Bước 1: Setup GitHub Token 🔑
+## Step 1: Setup GitHub Token 🔑
 
-### Tạo Personal Access Token
+### Create Personal Access Token
 
-1. Đăng nhập GitHub
-2. Vào [Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens)
+1. Log in to GitHub
+2. Go to [Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens)
 3. Click **"Generate new token"** > **"Generate new token (classic)"**
-4. Đặt tên cho token: `commit-tracker` hoặc tên bạn thích
-5. Chọn expiration: `No expiration` hoặc thời gian bạn muốn
-6. Chọn **scopes**:
-   - ✅ `public_repo` - Nếu chỉ track public repositories
-   - ✅ `repo` (full control) - Nếu cần track private repositories
+4. Name your token: `commit-tracker` or whatever you prefer
+5. Select expiration: `No expiration` or your preferred duration
+6. Select **scopes**:
+   - ✅ `public_repo` - If only tracking public repositories
+   - ✅ `repo` (full control) - If you need to track private repositories
 7. Click **"Generate token"**
-8. **⚠️ QUAN TRỌNG**: Copy token ngay lập tức (sẽ không hiển thị lại)
+8. **⚠️ IMPORTANT**: Copy the token immediately (it won't be shown again)
 
-Token sẽ có format: `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+Token format: `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 
 ---
 
-## Bước 2: Setup Telegram Bot 🤖
+## Step 2: Setup Telegram Bot 🤖
 
-### Tạo Bot với BotFather
+### Create Bot with BotFather
 
-1. Mở Telegram app
-2. Tìm kiếm **@BotFather** (bot chính thức của Telegram)
-3. Start conversation: Click **"START"** hoặc gửi `/start`
-4. Gửi lệnh: `/newbot`
-5. BotFather sẽ hỏi tên bot:
+1. Open Telegram app
+2. Search for **@BotFather** (official Telegram bot)
+3. Start conversation: Click **"START"** or send `/start`
+4. Send command: `/newbot`
+5. BotFather will ask for a bot name:
    ```
    Alright, a new bot. How are we going to call it? Please choose a name for your bot.
    ```
-   Trả lời VD: `My Commit Tracker`
+   Answer example: `My Commit Tracker`
 
-6. BotFather hỏi username (phải kết thúc bằng `bot`):
+6. BotFather asks for username (must end with `bot`):
    ```
    Good. Now let's choose a username for your bot. It must end in `bot`. Like this, for example: TetrisBot or tetris_bot.
    ```
-   Trả lời VD: `my_commit_tracker_bot`
+   Answer example: `my_commit_tracker_bot`
 
-7. **✅ Thành công!** BotFather sẽ trả về:
+7. **✅ Success!** BotFather will return:
    ```
    Done! Congratulations on your new bot. You will find it at t.me/my_commit_tracker_bot.
    You can now add a description...
@@ -50,38 +50,38 @@ Token sẽ có format: `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
    1234567890:ABCdefGHIjklMNOpqrsTUVwxyz-EXAMPLE
    ```
 
-8. **Copy Bot Token** (dòng bắt đầu bằng số)
+8. **Copy the Bot Token** (the line starting with numbers)
 
 ---
 
-## Bước 3: Lấy Chat ID 💬
+## Step 3: Get Chat ID 💬
 
-### Cách 1: Dùng @getidsbot (Dễ nhất)
+### Method 1: Use @getidsbot (Easiest)
 
-1. Tìm **@getidsbot** trên Telegram
+1. Search for **@getidsbot** on Telegram
 2. Click **START**
-3. Bot sẽ trả về Chat ID của bạn:
+3. Bot will return your Chat ID:
    ```
    Your user ID: 123456789
    ```
-4. Copy số này
+4. Copy this number
 
-### Cách 2: Dùng API (Nếu cách 1 không work)
+### Method 2: Use API (If method 1 doesn't work)
 
-1. Tìm bot của bạn trên Telegram (VD: `@my_commit_tracker_bot`)
-2. Click **START** và gửi một message bất kỳ (VD: `Hello`)
-3. Mở browser và truy cập:
+1. Find your bot on Telegram (e.g., `@my_commit_tracker_bot`)
+2. Click **START** and send any message (e.g., `Hello`)
+3. Open browser and visit:
    ```
    https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
    ```
-   Thay `<YOUR_BOT_TOKEN>` bằng token bạn lấy từ BotFather
+   Replace `<YOUR_BOT_TOKEN>` with the token from BotFather
 
-4. Bạn sẽ thấy JSON response, tìm:
+4. You'll see a JSON response, find:
    ```json
    {
      "message": {
        "chat": {
-         "id": 123456789,  👈 Đây là Chat ID của bạn
+         "id": 123456789,  👈 This is your Chat ID
          "first_name": "Your Name",
          ...
        }
@@ -89,47 +89,47 @@ Token sẽ có format: `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
    }
    ```
 
-5. Copy số `id` trong `chat`
+5. Copy the `id` number in `chat`
 
 ---
 
-## Bước 4: Cấu hình Environment Variables ⚙️
+## Step 4: Configure Environment Variables ⚙️
 
-File `.env` đã được tạo sẵn. Bây giờ bạn cần điền thông tin:
+The `.env` file has been created. Now you need to fill in the information:
 
-### Mở file .env
+### Open .env file
 
 ```bash
 # MacOS/Linux
 nano .env
 
-# Hoặc dùng VSCode
+# Or use VSCode
 code .env
 ```
 
-### Điền các giá trị
+### Fill in the values
 
 ```env
-# Paste GitHub token bạn vừa tạo
+# Paste the GitHub token you just created
 GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-# Paste Telegram bot token từ BotFather
+# Paste Telegram bot token from BotFather
 TELEGRAM_BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
 
-# Paste Chat ID bạn vừa lấy
+# Paste the Chat ID you just got
 TELEGRAM_CHAT_ID=123456789
 
-# Danh sách repos muốn track (format: owner/repo, ngăn cách bằng dấu phẩy)
+# List of repos to track (format: owner/repo, separated by commas)
 GITHUB_REPOS=facebook/react,microsoft/typescript,vercel/next.js
 
-# Tùy chọn: Thời gian check (giờ)
+# Optional: Check interval (hours)
 CHECK_INTERVAL_HOURS=3
 
-# Tùy chọn: Đường dẫn database
+# Optional: Database path
 DB_PATH=./db.json
 ```
 
-### Ví dụ .env hoàn chỉnh
+### Complete .env example
 
 ```env
 GITHUB_TOKEN=ghp_a1B2c3D4e5F6g7H8i9J0k1L2m3N4o5P6q7R8s9T0
@@ -140,19 +140,19 @@ CHECK_INTERVAL_HOURS=3
 DB_PATH=./db.json
 ```
 
-**💾 Lưu file**
+**💾 Save the file**
 
 ---
 
-## Bước 5: Test Local 🧪
+## Step 5: Test Locally 🧪
 
-### Test chạy script
+### Test run the script
 
 ```bash
 npm run dev
 ```
 
-### Kết quả mong đợi
+### Expected output
 
 ```
 🚀 Starting GitHub Commit Tracker...
@@ -168,11 +168,11 @@ npm run dev
 ✅ Bot connected: @my_commit_tracker_bot
 
 📊 GitHub API Rate Limit: 4999/5000 remaining
-   Resets at: 24/11/2025, 14:30:00
+   Resets at: 11/24/2025, 2:30:00 PM
 
-⏱️  Last check: 1/1/1970, 08:00:00
+⏱️  Last check: 1/1/1970, 8:00:00 AM
 
-🔍 Fetching commits since: 23/11/2025, 13:00:00
+🔍 Fetching commits since: 11/23/2025, 1:00:00 PM
 
 🔍 Fetching commits from facebook/react since 2025-11-23T...
 ✅ Found 15 commits in facebook/react
@@ -189,161 +189,161 @@ npm run dev
 📊 Summary: 25 new commit(s) from 3 repository(ies)
 ```
 
-### Kiểm tra Telegram
+### Check Telegram
 
-Bạn sẽ nhận được messages trên Telegram với format:
+You will receive messages on Telegram with this format:
 
 ```
-🔔 New Commit trong facebook/react
+🔔 New Commit in facebook/react
 
 Message: Fix: resolve memory leak in hooks
 Author: Dan Abramov
 SHA: a1b2c3d (clickable link)
-Date: 24/11/2025, 10:30:45
+Date: 11/24/2025, 10:30:45 AM
 ```
 
 ---
 
-## Bước 6: Deploy lên GitHub Actions (Miễn phí) 🌐
+## Step 6: Deploy to GitHub Actions (Free) 🌐
 
-### 6.1. Push code lên GitHub
+### 6.1. Push code to GitHub
 
 ```bash
-# Init git nếu chưa có
+# Init git if not already
 git init
 
-# Add remote (thay YOUR_USERNAME và YOUR_REPO)
+# Add remote (replace YOUR_USERNAME and YOUR_REPO)
 git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
 
-# Add và commit
+# Add and commit
 git add .
 git commit -m "Initial commit: GitHub commit tracker"
 
-# Push lên GitHub
+# Push to GitHub
 git push -u origin main
 ```
 
-### 6.2. Thêm GitHub Secrets
+### 6.2. Add GitHub Secrets
 
-1. Vào repository trên GitHub
+1. Go to repository on GitHub
 2. Click **Settings** tab
 3. Sidebar: **Secrets and variables** > **Actions**
 4. Click **"New repository secret"**
 
-Tạo **4 secrets** sau:
+Create these **4 secrets**:
 
-| Name | Value | Ví dụ |
-|------|-------|-------|
+| Name | Value | Example |
+|------|-------|---------|
 | `GH_TOKEN` | GitHub Personal Access Token | `ghp_a1B2c3...` |
 | `TELEGRAM_BOT_TOKEN` | Telegram Bot Token | `5234567890:AAH...` |
 | `TELEGRAM_CHAT_ID` | Telegram Chat ID | `987654321` |
-| `GITHUB_REPOS` | Danh sách repos | `facebook/react,vercel/next.js` |
+| `GITHUB_REPOS` | List of repos | `facebook/react,vercel/next.js` |
 
-**⚠️ Lưu ý**:
-- Secret names phải CHÍNH XÁC như trên (viết hoa)
-- Không có dấu ngoặc kép hoặc spaces
+**⚠️ Note**:
+- Secret names must be EXACTLY as shown (uppercase)
+- No quotes or spaces
 
 ### 6.3. Enable GitHub Actions
 
-1. Vào tab **Actions** trong repository
-2. Nếu bị disabled, click **"I understand my workflows, go ahead and enable them"**
-3. Bạn sẽ thấy workflow **"Track GitHub Commits"**
+1. Go to **Actions** tab in repository
+2. If disabled, click **"I understand my workflows, go ahead and enable them"**
+3. You'll see the **"Track GitHub Commits"** workflow
 
 ### 6.4. Test Workflow
 
-1. Trong tab **Actions**, click workflow **"Track GitHub Commits"**
-2. Click **"Run workflow"** dropdown (bên phải)
-3. Click button **"Run workflow"** (xanh lá)
-4. Đợi vài giây, workflow sẽ chạy
-5. Click vào workflow run để xem logs
-6. Kiểm tra Telegram để xem notifications
+1. In **Actions** tab, click **"Track GitHub Commits"** workflow
+2. Click **"Run workflow"** dropdown (on the right)
+3. Click **"Run workflow"** button (green)
+4. Wait a few seconds, workflow will run
+5. Click on the workflow run to see logs
+6. Check Telegram for notifications
 
-### 6.5. Workflow tự động
+### 6.5. Automatic workflow
 
-- Workflow sẽ **tự động chạy mỗi 3 giờ**
-- Bạn có thể trigger manually bất cứ lúc nào
-- Logs được lưu trong tab Actions
+- Workflow will **automatically run every 3 hours**
+- You can trigger it manually anytime
+- Logs are saved in Actions tab
 
 ---
 
-## Bước 7: Tùy chỉnh (Optional) 🎨
+## Step 7: Customize (Optional) 🎨
 
-### Thay đổi tần suất check
+### Change check frequency
 
 Edit file `.github/workflows/track-commits.yml`:
 
 ```yaml
 on:
   schedule:
-    # Mỗi 6 giờ
+    # Every 6 hours
     - cron: '0 */6 * * *'
 ```
 
 Cron examples:
-- `0 */3 * * *` - Mỗi 3 giờ
-- `0 */6 * * *` - Mỗi 6 giờ
-- `0 9,18 * * *` - 9am và 6pm UTC mỗi ngày
-- `0 0 * * *` - Mỗi ngày lúc midnight UTC
+- `0 */3 * * *` - Every 3 hours
+- `0 */6 * * *` - Every 6 hours
+- `0 9,18 * * *` - 9am and 6pm UTC daily
+- `0 0 * * *` - Daily at midnight UTC
 
-### Thêm/bớt repositories
+### Add/remove repositories
 
-Chỉnh sửa trong `.env` (local) hoặc GitHub Secret `GITHUB_REPOS`:
+Edit in `.env` (local) or GitHub Secret `GITHUB_REPOS`:
 
 ```env
 GITHUB_REPOS=owner1/repo1,owner2/repo2,owner3/repo3
 ```
 
-### Thay đổi format notification
+### Change notification format
 
-Edit file `src/utils/formatter.ts` để customize message format.
+Edit file `src/utils/formatter.ts` to customize message format.
 
 ---
 
 ## Troubleshooting 🔧
 
-### ❌ Lỗi: "GITHUB_TOKEN is required"
+### ❌ Error: "GITHUB_TOKEN is required"
 
-- Kiểm tra file `.env` có tồn tại không
-- Đảm bảo `GITHUB_TOKEN` đã được điền
-- Không có khoảng trắng thừa
+- Check if `.env` file exists
+- Make sure `GITHUB_TOKEN` is filled in
+- No extra whitespace
 
-### ❌ Lỗi: "Bot connection failed"
+### ❌ Error: "Bot connection failed"
 
-- Kiểm tra `TELEGRAM_BOT_TOKEN` có đúng không
-- Copy lại token từ BotFather
-- Đảm bảo không có khoảng trắng hoặc line breaks
+- Check if `TELEGRAM_BOT_TOKEN` is correct
+- Copy token again from BotFather
+- Make sure no whitespace or line breaks
 
-### ❌ Không nhận được Telegram message
+### ❌ Not receiving Telegram messages
 
-- Kiểm tra `TELEGRAM_CHAT_ID` có đúng không
-- Đảm bảo đã **/start** conversation với bot
-- Test lại bằng cách gửi message cho bot trước
+- Check if `TELEGRAM_CHAT_ID` is correct
+- Make sure you've **/start** conversation with bot
+- Test by sending a message to bot first
 
-### ❌ GitHub Actions không chạy
+### ❌ GitHub Actions not running
 
-- Kiểm tra secrets đã được thêm chưa
-- Secret names phải CHÍNH XÁC (case-sensitive)
-- Kiểm tra workflow file có đúng syntax không
+- Check if secrets have been added
+- Secret names must be EXACT (case-sensitive)
+- Check if workflow file has correct syntax
 
 ### ❌ Rate limit exceeded
 
 - GitHub free tier: 5,000 requests/hour
-- Giảm số repos hoặc tăng interval time
-- Check limit: `npm run dev` sẽ hiển thị remaining requests
+- Reduce number of repos or increase interval time
+- Check limit: `npm run dev` will display remaining requests
 
 ---
 
-## Hoàn tất! 🎉
+## Complete! 🎉
 
-Bạn đã setup thành công GitHub Commit Tracker!
+You've successfully set up GitHub Commit Tracker!
 
 **Next steps:**
-- Kiểm tra Telegram notifications
+- Check Telegram notifications
 - Monitor GitHub Actions logs
-- Customize message format nếu muốn
-- Thêm repos cần track
+- Customize message format if desired
+- Add more repos to track
 
 **Support:**
-- Nếu gặp vấn đề, tạo issue trên GitHub
-- Check logs trong GitHub Actions để debug
-- Đọc README.md để biết thêm chi tiết
+- If you encounter issues, create an issue on GitHub
+- Check logs in GitHub Actions for debugging
+- Read README.md for more details

@@ -1,98 +1,98 @@
-# ⚡ Quick Start - 5 phút để chạy
+# ⚡ Quick Start - Get Running in 5 Minutes
 
-Hướng dẫn setup nhanh trong 5 phút!
+Quick setup guide in 5 minutes!
 
-## Bước 1: Cài đặt (✅ Đã xong)
+## Step 1: Install (✅ Done)
 
 ```bash
-npm install  # ✅ Đã chạy rồi
+npm install  # ✅ Already done
 ```
 
-## Bước 2: Tạo GitHub Token (1 phút)
+## Step 2: Create GitHub Token (1 minute)
 
-1. Vào: https://github.com/settings/tokens
+1. Go to: https://github.com/settings/tokens
 2. Click **"Generate new token (classic)"**
-3. Chọn scope: `public_repo` (hoặc `repo` nếu cần private repos)
-4. Copy token (dạng: `ghp_xxxxx...`)
+3. Select scope: `public_repo` (or `repo` if you need private repos)
+4. Copy token (format: `ghp_xxxxx...`)
 
-## Bước 3: Tạo Telegram Bot (2 phút)
+## Step 3: Create Telegram Bot (2 minutes)
 
-1. Mở Telegram, tìm **@BotFather**
-2. Gửi: `/newbot`
-3. Đặt tên bot: `My Commit Tracker`
-4. Đặt username: `my_commit_tracker_bot`
-5. Copy **Bot Token** (dạng: `1234567890:ABC...`)
+1. Open Telegram, search for **@BotFather**
+2. Send: `/newbot`
+3. Name your bot: `My Commit Tracker`
+4. Set username: `my_commit_tracker_bot`
+5. Copy **Bot Token** (format: `1234567890:ABC...`)
 
-## Bước 4: Lấy Chat ID (1 phút)
+## Step 4: Get Chat ID (1 minute)
 
-1. Tìm **@getidsbot** trên Telegram
+1. Search for **@getidsbot** on Telegram
 2. Click START
-3. Copy **Chat ID** (dạng: `123456789`)
+3. Copy **Chat ID** (format: `123456789`)
 
-## Bước 5: Cấu hình .env (1 phút)
+## Step 5: Configure .env (1 minute)
 
-Mở file `.env` và điền:
+Open `.env` file and fill in:
 
 ```env
-GITHUB_TOKEN=ghp_paste_token_của_bạn_ở_đây
-TELEGRAM_BOT_TOKEN=1234567890:paste_bot_token_ở_đây
-TELEGRAM_CHAT_ID=paste_chat_id_ở_đây
+GITHUB_TOKEN=ghp_paste_your_token_here
+TELEGRAM_BOT_TOKEN=1234567890:paste_bot_token_here
+TELEGRAM_CHAT_ID=paste_chat_id_here
 GITHUB_REPOS=facebook/react,vercel/next.js
 ```
 
-## Bước 6: Test! (30 giây)
+## Step 6: Test! (30 seconds)
 
 ```bash
 npm test
 ```
 
-Bạn sẽ thấy:
+You should see:
 - ✅ All connections successful
-- 📱 Test message trên Telegram
+- 📱 Test message on Telegram
 
-## Bước 7: Chạy Tracker
+## Step 7: Run Tracker
 
 ```bash
 npm run dev
 ```
 
-🎉 **Xong!** Bạn sẽ nhận commits mới qua Telegram!
+🎉 **Done!** You'll receive new commits via Telegram!
 
 ---
 
-## Deploy lên GitHub Actions (Bonus - Free forever)
+## Deploy to GitHub Actions (Bonus - Free Forever)
 
 ```bash
-# Push lên GitHub
+# Push to GitHub
 git add .
 git commit -m "Setup commit tracker"
 git push
 
-# Vào GitHub repo > Settings > Secrets > Actions
-# Thêm 4 secrets:
+# Go to GitHub repo > Settings > Secrets > Actions
+# Add 4 secrets:
 - GH_TOKEN
 - TELEGRAM_BOT_TOKEN
 - TELEGRAM_CHAT_ID
 - GITHUB_REPOS
 
 # Enable Actions tab
-# Click "Run workflow" để test
+# Click "Run workflow" to test
 ```
 
-✅ Workflow sẽ tự chạy mỗi 3 giờ!
+✅ Workflow will run automatically every 3 hours!
 
 ---
 
 ## Commands Cheat Sheet
 
 ```bash
-npm test              # Test kết nối
-npm run dev           # Chạy tracker một lần
+npm test              # Test connections
+npm run dev           # Run tracker once
 npm run build         # Build TypeScript
-npm start             # Chạy compiled version
+npm start             # Run compiled version
 ```
 
-## Cần trợ giúp?
+## Need Help?
 
-📖 Đọc **SETUP.md** để có hướng dẫn chi tiết
-🐛 Gặp lỗi? Check **Troubleshooting** section trong SETUP.md
+📖 Read **SETUP.md** for detailed instructions
+🐛 Got errors? Check **Troubleshooting** section in SETUP.md

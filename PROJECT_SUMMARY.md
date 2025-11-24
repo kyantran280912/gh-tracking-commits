@@ -1,13 +1,13 @@
 # 🎉 Project Setup Complete!
 
-GitHub Commit Tracker đã được setup hoàn chỉnh và sẵn sàng sử dụng.
+GitHub Commit Tracker has been fully set up and is ready to use.
 
-## ✅ Đã hoàn thành
+## ✅ Completed
 
 ### 📦 Dependencies
-- ✅ Node modules đã được cài đặt (62 packages)
-- ✅ TypeScript đã compile thành công
-- ✅ Không có vulnerabilities
+- ✅ Node modules installed (62 packages)
+- ✅ TypeScript compiled successfully
+- ✅ No vulnerabilities
 
 ### 📁 Project Structure
 
@@ -16,15 +16,15 @@ tracking-commit-github/
 ├── 📄 Configuration Files
 │   ├── package.json          # Dependencies & scripts
 │   ├── tsconfig.json         # TypeScript config
-│   ├── .env                  # Environment variables (⚠️ cần điền)
+│   ├── .env                  # Environment variables (⚠️ needs configuration)
 │   ├── .env.example          # Template
 │   └── .gitignore           # Git ignore rules
 │
 ├── 📚 Documentation
-│   ├── README.md             # Tổng quan project
-│   ├── QUICKSTART.md         # Bắt đầu nhanh (5 phút)
-│   ├── SETUP.md              # Hướng dẫn chi tiết
-│   └── PROJECT_SUMMARY.md    # File này
+│   ├── README.md             # Project overview
+│   ├── QUICKSTART.md         # Quick start (5 minutes)
+│   ├── SETUP.md              # Detailed guide
+│   └── PROJECT_SUMMARY.md    # This file
 │
 ├── 🔧 Source Code
 │   ├── src/
@@ -71,20 +71,20 @@ npm run test:connection  # Same as npm test
 
 ## 🚦 Next Steps
 
-### Step 1: Điền Environment Variables
+### Step 1: Fill Environment Variables
 
-File `.env` đã được tạo. Bạn cần điền các giá trị:
+The `.env` file has been created. You need to fill in the values:
 
 ```env
-GITHUB_TOKEN=ghp_your_token_here              # ⚠️ CẦN ĐIỀN
-TELEGRAM_BOT_TOKEN=123:ABC...                 # ⚠️ CẦN ĐIỀN
-TELEGRAM_CHAT_ID=123456789                    # ⚠️ CẦN ĐIỀN
-GITHUB_REPOS=facebook/react,vercel/next.js    # ⚠️ CẦN ĐIỀN
+GITHUB_TOKEN=ghp_your_token_here              # ⚠️ NEEDS CONFIGURATION
+TELEGRAM_BOT_TOKEN=123:ABC...                 # ⚠️ NEEDS CONFIGURATION
+TELEGRAM_CHAT_ID=123456789                    # ⚠️ NEEDS CONFIGURATION
+GITHUB_REPOS=facebook/react,vercel/next.js    # ⚠️ NEEDS CONFIGURATION
 ```
 
-**📖 Hướng dẫn lấy tokens:**
-- Đọc [QUICKSTART.md](QUICKSTART.md) (5 phút)
-- Hoặc [SETUP.md](SETUP.md) (chi tiết)
+**📖 How to get tokens:**
+- Read [QUICKSTART.md](QUICKSTART.md) (5 minutes)
+- Or [SETUP.md](SETUP.md) (detailed)
 
 ### Step 2: Test Connection
 
@@ -92,48 +92,48 @@ GITHUB_REPOS=facebook/react,vercel/next.js    # ⚠️ CẦN ĐIỀN
 npm test
 ```
 
-Kết quả mong đợi:
+Expected result:
 ```
 ✅ ALL TESTS PASSED!
-📱 Kiểm tra Telegram để thấy test message
+📱 Check Telegram for test message
 ```
 
-### Step 3: Chạy Tracker
+### Step 3: Run Tracker
 
 ```bash
 npm run dev
 ```
 
-Bạn sẽ nhận được notifications về commits mới qua Telegram!
+You'll receive notifications about new commits via Telegram!
 
-### Step 4: Deploy lên GitHub Actions (Optional - Free)
+### Step 4: Deploy to GitHub Actions (Optional - Free)
 
-1. Push code lên GitHub repository
-2. Thêm secrets trong Settings > Secrets > Actions:
+1. Push code to GitHub repository
+2. Add secrets in Settings > Secrets > Actions:
    - `GH_TOKEN`
    - `TELEGRAM_BOT_TOKEN`
    - `TELEGRAM_CHAT_ID`
    - `GITHUB_REPOS`
 3. Enable Actions tab
-4. Workflow tự động chạy mỗi 3 giờ
+4. Workflow runs automatically every 3 hours
 
-**Chi tiết:** Xem [SETUP.md](SETUP.md) section "Deploy lên GitHub Actions"
+**Details:** See [SETUP.md](SETUP.md) section "Deploy to GitHub Actions"
 
 ## 📱 Message Format Examples
 
 ### Single Commit
 ```
-🔔 New Commit trong facebook/react
+🔔 New Commit in facebook/react
 
 Message: Fix: resolve memory leak in hooks
 Author: Dan Abramov
 SHA: a1b2c3d (clickable)
-Date: 24/11/2025, 10:30:45
+Date: 11/24/2025, 10:30:45 AM
 ```
 
 ### Multiple Commits
 ```
-📢 5 commits mới trong facebook/react
+📢 5 new commits in facebook/react
 
 1. a1b2c3d Add TypeScript support
    by Dan Abramov
@@ -147,8 +147,8 @@ Date: 24/11/2025, 10:30:45
 
 ✅ **Multi-repo tracking** - Track unlimited repositories
 ✅ **Smart deduplication** - No duplicate notifications
-✅ **Beautiful formatting** - HTML messages với clickable links
-✅ **Type-safe** - Full TypeScript với strict mode
+✅ **Beautiful formatting** - HTML messages with clickable links
+✅ **Type-safe** - Full TypeScript with strict mode
 ✅ **Production-ready** - Error handling & logging
 ✅ **Free deployment** - GitHub Actions (unlimited for public repos)
 ✅ **Easy configuration** - Environment variables
@@ -157,7 +157,7 @@ Date: 24/11/2025, 10:30:45
 
 ## 🔧 Customization
 
-### Thay đổi interval
+### Change interval
 
 Edit `.github/workflows/track-commits.yml`:
 
@@ -167,14 +167,14 @@ on:
     - cron: '0 */6 * * *'  # Every 6 hours
 ```
 
-### Thay đổi message format
+### Change message format
 
 Edit `src/utils/formatter.ts` functions:
 - `formatSingleCommit()` - Single commit format
 - `formatMultipleCommits()` - Multiple commits format
 - `formatDetailedCommit()` - Detailed format
 
-### Thêm repositories
+### Add repositories
 
 Update `.env`:
 ```env
@@ -192,20 +192,20 @@ GITHUB_REPOS=repo1/name1,repo2/name2,repo3/name3
 
 ## 🐛 Troubleshooting
 
-Nếu gặp lỗi, check:
+If you encounter errors, check:
 
-1. **Configuration errors**: `npm test` để verify
-2. **Build errors**: `npm run build` để check TypeScript
-3. **Detailed guides**: Đọc [SETUP.md](SETUP.md) Troubleshooting section
+1. **Configuration errors**: Run `npm test` to verify
+2. **Build errors**: Run `npm run build` to check TypeScript
+3. **Detailed guides**: Read [SETUP.md](SETUP.md) Troubleshooting section
 
 ## 📖 Documentation
 
 | File | Description | When to read |
 |------|-------------|--------------|
-| [README.md](README.md) | Tổng quan project | Bắt đầu |
-| [QUICKSTART.md](QUICKSTART.md) | Setup nhanh 5 phút | Muốn bắt đầu ngay |
-| [SETUP.md](SETUP.md) | Hướng dẫn chi tiết | Gặp vấn đề hoặc deploy |
-| PROJECT_SUMMARY.md | Tổng kết này | Hiểu overview |
+| [README.md](README.md) | Project overview | Getting started |
+| [QUICKSTART.md](QUICKSTART.md) | Quick 5-minute setup | Want to start immediately |
+| [SETUP.md](SETUP.md) | Detailed guide | Having issues or deploying |
+| PROJECT_SUMMARY.md | This summary | Understand overview |
 
 ## 🎓 Learning Resources
 
@@ -224,11 +224,11 @@ Nếu gặp lỗi, check:
 
 ## 💡 Tips
 
-1. **Test first**: Luôn chạy `npm test` trước khi deploy
-2. **Rate limits**: GitHub cho 5,000 requests/hour (authenticated)
-3. **Artifacts**: GitHub Actions artifacts giữ 90 ngày
-4. **Secrets**: Không bao giờ commit `.env` file
-5. **Logs**: Check GitHub Actions logs nếu có vấn đề
+1. **Test first**: Always run `npm test` before deploying
+2. **Rate limits**: GitHub allows 5,000 requests/hour (authenticated)
+3. **Artifacts**: GitHub Actions artifacts are kept for 90 days
+4. **Secrets**: Never commit `.env` file
+5. **Logs**: Check GitHub Actions logs if issues occur
 
 ## 🚀 Ready to Go!
 
@@ -242,6 +242,6 @@ npm run dev           # Run tracker
 
 ---
 
-**Questions?** Đọc [SETUP.md](SETUP.md) hoặc check source code comments.
+**Questions?** Read [SETUP.md](SETUP.md) or check source code comments.
 
 **Happy tracking! 🎉**

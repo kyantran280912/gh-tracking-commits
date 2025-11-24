@@ -1,29 +1,29 @@
 # GitHub Commit Tracker
 
-Tự động theo dõi commits mới từ các GitHub repositories và gửi thông báo qua Telegram.
+Automatically track new commits from GitHub repositories and send notifications via Telegram.
 
 ## 📚 Quick Links
 
-- **⚡ [QUICKSTART.md](QUICKSTART.md)** - Bắt đầu trong 5 phút
-- **📖 [SETUP.md](SETUP.md)** - Hướng dẫn chi tiết từng bước
+- **⚡ [QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
+- **📖 [SETUP.md](SETUP.md)** - Detailed step-by-step guide
 - **🧪 Test Connection**: `npm test`
 
-## Tính năng
+## Features
 
-- 🔍 Theo dõi commits từ một hoặc nhiều GitHub repositories
-- 📱 Gửi thông báo tự động qua Telegram Bot
-- ⏰ Chạy định kỳ (mặc định: mỗi 3 giờ)
-- 💾 Lưu trạng thái để tránh thông báo trùng lặp
-- 🆓 Deploy miễn phí trên GitHub Actions
-- 🔒 Type-safe với TypeScript
+- 🔍 Track commits from one or multiple GitHub repositories
+- 📱 Send automatic notifications via Telegram Bot
+- ⏰ Run periodically (default: every 3 hours)
+- 💾 Save state to avoid duplicate notifications
+- 🆓 Deploy for free on GitHub Actions
+- 🔒 Type-safe with TypeScript
 
-## Yêu cầu
+## Requirements
 
 - Node.js 20+
 - GitHub Personal Access Token
-- Telegram Bot Token và Chat ID
+- Telegram Bot Token and Chat ID
 
-## Cài đặt
+## Installation
 
 ### 1. Clone repository
 
@@ -32,49 +32,49 @@ git clone <your-repo-url>
 cd tracking-commit-github
 ```
 
-### 2. Cài đặt dependencies
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Tạo GitHub Personal Access Token
+### 3. Create GitHub Personal Access Token
 
-1. Truy cập [GitHub Settings > Tokens](https://github.com/settings/tokens)
+1. Visit [GitHub Settings > Tokens](https://github.com/settings/tokens)
 2. Click "Generate new token (classic)"
-3. Chọn scopes:
-   - `public_repo` (nếu chỉ track public repos)
-   - `repo` (nếu track cả private repos)
+3. Select scopes:
+   - `public_repo` (if only tracking public repos)
+   - `repo` (if tracking private repos too)
 4. Copy token
 
-### 4. Tạo Telegram Bot
+### 4. Create Telegram Bot
 
-1. Mở Telegram và tìm [@BotFather](https://t.me/BotFather)
-2. Gửi lệnh `/newbot`
-3. Làm theo hướng dẫn để đặt tên bot
-4. Copy Bot Token (dạng: `1234567890:ABCdefGHI...`)
+1. Open Telegram and search for [@BotFather](https://t.me/BotFather)
+2. Send command `/newbot`
+3. Follow instructions to name your bot
+4. Copy Bot Token (format: `1234567890:ABCdefGHI...`)
 
-### 5. Lấy Telegram Chat ID
+### 5. Get Telegram Chat ID
 
-**Cách 1: Dùng bot GetIDs**
-1. Tìm [@getidsbot](https://t.me/getidsbot) trên Telegram
-2. Start chat với bot
+**Method 1: Use GetIDs bot**
+1. Search for [@getidsbot](https://t.me/getidsbot) on Telegram
+2. Start chat with the bot
 3. Copy Chat ID
 
-**Cách 2: Dùng API**
-1. Gửi message cho bot của bạn
-2. Truy cập: `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
-3. Tìm `"chat":{"id":123456789}` và copy ID
+**Method 2: Use API**
+1. Send a message to your bot
+2. Visit: `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
+3. Find `"chat":{"id":123456789}` and copy the ID
 
-### 6. Cấu hình environment variables
+### 6. Configure environment variables
 
-Tạo file `.env` từ `.env.example`:
+Create `.env` file from `.env.example`:
 
 ```bash
 cp .env.example .env
 ```
 
-Chỉnh sửa `.env` với thông tin của bạn:
+Edit `.env` with your information:
 
 ```env
 GITHUB_TOKEN=ghp_your_token_here
@@ -83,9 +83,9 @@ TELEGRAM_CHAT_ID=123456789
 GITHUB_REPOS=facebook/react,microsoft/typescript
 ```
 
-## Sử dụng
+## Usage
 
-### Chạy local
+### Run locally
 
 ```bash
 # Development mode
@@ -99,54 +99,54 @@ npm start
 npm run track
 ```
 
-### Deploy lên GitHub Actions (Khuyên dùng - Miễn phí)
+### Deploy to GitHub Actions (Recommended - Free)
 
-1. **Push code lên GitHub repository của bạn**
+1. **Push code to your GitHub repository**
 
-2. **Tạo GitHub Secrets**
+2. **Create GitHub Secrets**
 
-   Vào repository của bạn trên GitHub:
+   Go to your repository on GitHub:
    - Settings > Secrets and variables > Actions
    - Click "New repository secret"
 
-   Tạo các secrets sau:
+   Create these secrets:
    - `GH_TOKEN`: GitHub Personal Access Token
    - `TELEGRAM_BOT_TOKEN`: Telegram Bot Token
    - `TELEGRAM_CHAT_ID`: Telegram Chat ID
-   - `GITHUB_REPOS`: Danh sách repos cần track (VD: `facebook/react,vercel/next.js`)
+   - `GITHUB_REPOS`: List of repos to track (e.g., `facebook/react,vercel/next.js`)
 
 3. **Enable GitHub Actions**
 
-   - Vào tab "Actions" trong repository
-   - Nếu bị disable, click "Enable Actions"
+   - Go to "Actions" tab in repository
+   - If disabled, click "Enable Actions"
 
 4. **Test workflow**
 
-   - Vào tab "Actions"
-   - Chọn workflow "Track GitHub Commits"
+   - Go to "Actions" tab
+   - Select "Track GitHub Commits" workflow
    - Click "Run workflow" > "Run workflow"
-   - Kiểm tra logs và Telegram messages
+   - Check logs and Telegram messages
 
-5. **Workflow sẽ tự động chạy mỗi 3 giờ**
+5. **Workflow will automatically run every 3 hours**
 
-### Thay đổi tần suất check
+### Change check frequency
 
-Chỉnh sửa file [.github/workflows/track-commits.yml](.github/workflows/track-commits.yml):
+Edit file [.github/workflows/track-commits.yml](.github/workflows/track-commits.yml):
 
 ```yaml
 on:
   schedule:
-    # Mỗi 6 giờ
+    # Every 6 hours
     - cron: '0 */6 * * *'
 
-    # Hoặc mỗi 12 giờ
+    # Or every 12 hours
     - cron: '0 */12 * * *'
 
-    # Hoặc mỗi ngày lúc 9am UTC
+    # Or daily at 9am UTC
     - cron: '0 9 * * *'
 ```
 
-## Cấu trúc Project
+## Project Structure
 
 ```
 tracking-commit-github/
@@ -169,23 +169,23 @@ tracking-commit-github/
 └── db.json                     # State file (auto-generated)
 ```
 
-## Định dạng Notification
+## Notification Format
 
 ### Single Commit
 
 ```
-🔔 New Commit trong facebook/react
+🔔 New Commit in facebook/react
 
 Message: Fix: resolve memory leak in useEffect
 Author: Dan Abramov
 SHA: a1b2c3d (clickable link)
-Date: 24/11/2025, 10:30:45
+Date: 11/24/2025, 10:30:45 AM
 ```
 
 ### Multiple Commits
 
 ```
-📢 5 commits mới trong facebook/react
+📢 5 new commits in facebook/react
 
 1. a1b2c3d Add TypeScript support
    by Dan Abramov
@@ -193,28 +193,28 @@ Date: 24/11/2025, 10:30:45
 2. b2c3d4e Fix linting errors
    by Sophie Alpert
 
-... và 3 commits nữa
+... and 3 more commits
 ```
 
 ## Troubleshooting
 
-### Không nhận được Telegram notifications
+### Not receiving Telegram notifications
 
-1. Kiểm tra Bot Token và Chat ID có đúng không
-2. Đảm bảo đã start chat với bot (gửi `/start`)
-3. Check logs trong GitHub Actions
+1. Check if Bot Token and Chat ID are correct
+2. Make sure you've started chat with bot (send `/start`)
+3. Check logs in GitHub Actions
 
 ### GitHub API rate limit
 
 - Free tier: 5,000 requests/hour (authenticated)
-- Mỗi lần chạy script dùng 1 request cho mỗi repo
-- Với 10 repos và check mỗi 3 giờ: chỉ dùng ~80 requests/day
+- Each script run uses 1 request per repo
+- With 10 repos and check every 3 hours: only ~80 requests/day
 
-### Database không persist trong GitHub Actions
+### Database not persisting in GitHub Actions
 
-- GitHub Actions workflow đã config artifacts để lưu `db.json`
-- Artifacts giữ trong 90 ngày
-- Nếu artifacts expire, script sẽ tự tạo database mới
+- GitHub Actions workflow is configured with artifacts to save `db.json`
+- Artifacts are kept for 90 days
+- If artifacts expire, script will create new database automatically
 
 ## Tech Stack
 
@@ -235,4 +235,4 @@ Pull requests are welcome! For major changes, please open an issue first.
 
 ## Support
 
-Nếu gặp vấn đề, vui lòng tạo issue trên GitHub repository.
+If you encounter issues, please create an issue on the GitHub repository.
