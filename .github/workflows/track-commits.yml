@@ -1,0 +1,48 @@
+name: Track GitHub Commits
+
+on:
+  schedule:
+    # Run every 3 hours
+    - cron: '0 */3 * * *'
+
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download previous state
+        uses: actions/download-artifact@v4
+        with:
+          name: commit-tracker-state
+          path: .
+        continue-on-error: true
+
+      - name: Run commit tracker
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_REPOS: ${{ secrets.GITHUB_REPOS }}
+        run: npm run track
+
+      - name: Upload state
+        uses: actions/upload-artifact@v4
+        with:
+          name: commit-tracker-state
+          path: db.json
+          retention-days: 90

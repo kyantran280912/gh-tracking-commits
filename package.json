@@ -1,0 +1,35 @@
+{
+  "name": "tracking-commit-github",
+  "version": "1.0.0",
+  "description": "Track GitHub commits and send Telegram notifications",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "track": "tsx src/index.ts",
+    "test": "tsx src/test-connection.ts",
+    "test:connection": "tsx src/test-connection.ts"
+  },
+  "keywords": [
+    "github",
+    "telegram",
+    "notifications",
+    "commit-tracker"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "octokit": "^4.0.2",
+    "telegraf": "^4.16.3",
+    "lowdb": "^7.0.1",
+    "dotenv": "^16.4.7",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "tsx": "^4.19.2"
+  }
+}
