@@ -1,37 +1,29 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Trash2, Edit, Search, Send } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import { Plus, Search, Send } from 'lucide-react';
+import { useRepositoryMutations } from '@/hooks/useRepositoryMutations';
+import {
+  AddRepositoryDialog,
+  RepositoryTableRow,
+} from '@/components/repositories';
 
 export default function RepositoriesPage() {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [newRepoString, setNewRepoString] = useState('');
-  const [error, setError] = useState('');
+  const [createError, setCreateError] = useState('');
 
   // Fetch repositories
   const { data: reposResponse, isLoading } = useQuery({
@@ -39,139 +31,22 @@ export default function RepositoriesPage() {
     queryFn: () => apiClient.getRepositories({ search }),
   });
 
-  // Create repository mutation
-  const createMutation = useMutation({
-    mutationFn: (repoString: string) =>
-      apiClient.createRepository({ repoString }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['repositories'] });
+  // All mutations in a single hook
+  const mutations = useRepositoryMutations({
+    search,
+    onCreateSuccess: () => {
       setShowAddDialog(false);
-      setNewRepoString('');
-      setError('');
-    },
-    onError: (err: any) => {
-      setError(err.message || 'Failed to add repository');
+      setCreateError('');
     },
   });
 
-  // Delete repository mutation
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => apiClient.deleteRepository(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['repositories'] });
-    },
-  });
-
-  // Test notifications mutation
-  const testNotificationsMutation = useMutation({
-    mutationFn: () => apiClient.testRepositoryNotifications(),
-    onSuccess: (response) => {
-      const data = response.data;
-      if (data) {
-        toast({
-          title: 'Test completed!',
-          description: `Processed ${data.reposProcessed} repositories and sent ${data.messagesSent} messages.`,
-          variant: data.errors.length > 0 ? 'destructive' : 'default',
-        });
-
-        if (data.errors.length > 0) {
-          console.error('Test errors:', data.errors);
-        }
-      }
-    },
-    onError: (err: any) => {
-      toast({
-        title: 'Test failed',
-        description: err.message || 'Failed to send test notifications',
-        variant: 'destructive',
-      });
-    },
-  });
-
-  // Send commits demo mutation
-  const sendCommitsMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await fetch(`/api/repositories/${id}/send-commits`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiClient.getToken()}`,
-        },
-      });
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ error: 'Failed to send commits' }));
-        throw new Error(error.error || `HTTP ${res.status}`);
-      }
-      return res.json();
-    },
-    onSuccess: (data) => {
-      toast({
-        title: 'Commits sent!',
-        description: data.message || `Successfully sent commits to Telegram`,
-        variant: 'default',
-      });
-    },
-    onError: (err: any) => {
-      toast({
-        title: 'Failed to send commits',
-        description: err.message || 'An error occurred',
-        variant: 'destructive',
-      });
-    },
-  });
-
-  // Update notification interval mutation with optimistic update
-  const updateIntervalMutation = useMutation({
-    mutationFn: ({ id, interval }: { id: number; interval: number }) =>
-      apiClient.updateRepository(id, { notification_interval: interval }),
-    onMutate: async ({ id, interval }) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['repositories'] });
-
-      // Snapshot the previous value
-      const previousRepos = queryClient.getQueryData(['repositories', search]);
-
-      // Optimistically update
-      queryClient.setQueryData(['repositories', search], (old: any) => ({
-        ...old,
-        data: old?.data?.map((repo: any) =>
-          repo.id === id ? { ...repo, notification_interval: interval } : repo
-        ),
-      }));
-
-      return { previousRepos };
-    },
-    onError: (err: any, variables, context) => {
-      // Rollback on error
-      queryClient.setQueryData(['repositories', search], context?.previousRepos);
-      toast({
-        title: 'Failed to update interval',
-        description: err.message || 'An error occurred',
-        variant: 'destructive',
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Interval updated',
-        description: 'Notification interval has been updated successfully',
-      });
-    },
-  });
-
-  const handleAddRepo = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newRepoString.trim()) {
-      setError('Repository string is required');
-      return;
-    }
-    createMutation.mutate(newRepoString.trim());
-  };
-
-  const handleDeleteRepo = (id: number, repoString: string) => {
-    if (
-      confirm(`Are you sure you want to stop tracking "${repoString}"?`)
-    ) {
-      deleteMutation.mutate(id);
-    }
+  const handleCreate = (repoString: string) => {
+    setCreateError('');
+    mutations.createMutation.mutate(repoString, {
+      onError: (err: Error) => {
+        setCreateError(err.message || 'Failed to add repository');
+      },
+    });
   };
 
   return (
@@ -187,11 +62,17 @@ export default function RepositoriesPage() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => testNotificationsMutation.mutate()}
-            disabled={testNotificationsMutation.isPending || !reposResponse?.data || reposResponse.data.length === 0}
+            onClick={() => mutations.testNotificationsMutation.mutate()}
+            disabled={
+              mutations.testNotificationsMutation.isPending ||
+              !reposResponse?.data ||
+              reposResponse.data.length === 0
+            }
           >
             <Send className="mr-2 h-4 w-4" />
-            {testNotificationsMutation.isPending ? 'Sending...' : 'Test Notifications'}
+            {mutations.testNotificationsMutation.isPending
+              ? 'Sending...'
+              : 'Test Notifications'}
           </Button>
           <Button onClick={() => setShowAddDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
@@ -201,60 +82,13 @@ export default function RepositoriesPage() {
       </div>
 
       {/* Add Repository Dialog */}
-      {showAddDialog && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add New Repository</CardTitle>
-            <CardDescription>
-              Enter the repository in format: owner/repo or owner/repo:branch
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAddRepo} className="space-y-4">
-              {error && (
-                <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                  {error}
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="repoString">Repository</Label>
-                <Input
-                  id="repoString"
-                  placeholder="facebook/react or vercel/next.js:canary"
-                  value={newRepoString}
-                  onChange={(e) => setNewRepoString(e.target.value)}
-                  disabled={createMutation.isPending}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Examples: facebook/react, vercel/next.js:canary
-                </p>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  type="submit"
-                  disabled={createMutation.isPending}
-                >
-                  {createMutation.isPending ? 'Adding...' : 'Add Repository'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShowAddDialog(false);
-                    setNewRepoString('');
-                    setError('');
-                  }}
-                  disabled={createMutation.isPending}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+      <AddRepositoryDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        onSubmit={handleCreate}
+        isPending={mutations.createMutation.isPending}
+        error={createError}
+      />
 
       {/* Search */}
       <div className="flex items-center gap-2">
@@ -300,74 +134,20 @@ export default function RepositoriesPage() {
               </TableHeader>
               <TableBody>
                 {reposResponse.data.map((repo) => (
-                  <TableRow key={repo.id}>
-                    <TableCell className="font-medium">
-                      <a
-                        href={`https://github.com/${repo.owner}/${repo.repo}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {repo.owner}/{repo.repo}
-                      </a>
-                    </TableCell>
-                    <TableCell>
-                      <code className="px-2 py-1 bg-muted rounded text-xs">
-                        {repo.branch || 'default'}
-                      </code>
-                    </TableCell>
-                    <TableCell>
-                      <select
-                        value={repo.notification_interval || 3}
-                        onChange={(e) =>
-                          updateIntervalMutation.mutate({
-                            id: repo.id,
-                            interval: parseInt(e.target.value),
-                          })
-                        }
-                        disabled={updateIntervalMutation.isPending}
-                        className="px-2 py-1 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      >
-                        <option value={1}>1h</option>
-                        <option value={2}>2h</option>
-                        <option value={3}>3h</option>
-                        <option value={6}>6h</option>
-                        <option value={12}>12h</option>
-                        <option value={24}>24h</option>
-                      </select>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {repo.last_check_time
-                        ? formatDate(repo.last_check_time)
-                        : 'Never'}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {formatDate(repo.created_at)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => sendCommitsMutation.mutate(repo.id)}
-                          disabled={sendCommitsMutation.isPending}
-                        >
-                          <Send className="mr-2 h-4 w-4" />
-                          {sendCommitsMutation.isPending ? 'Sending...' : 'Send Commits'}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            handleDeleteRepo(repo.id, repo.repo_string)
-                          }
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <RepositoryTableRow
+                    key={repo.id}
+                    repo={repo}
+                    onDelete={mutations.handleDelete}
+                    onUpdateInterval={(id, interval) =>
+                      mutations.updateIntervalMutation.mutate({ id, interval })
+                    }
+                    onSendCommits={(id) =>
+                      mutations.sendCommitsMutation.mutate(id)
+                    }
+                    isUpdatingInterval={mutations.updateIntervalMutation.isPending}
+                    isSendingCommits={mutations.sendCommitsMutation.isPending}
+                    isDeleting={mutations.deleteMutation.isPending}
+                  />
                 ))}
               </TableBody>
             </Table>
@@ -378,7 +158,10 @@ export default function RepositoriesPage() {
       {/* Pagination */}
       {reposResponse?.pagination && reposResponse.pagination.totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" disabled={reposResponse.pagination.page === 1}>
+          <Button
+            variant="outline"
+            disabled={reposResponse.pagination.page === 1}
+          >
             Previous
           </Button>
           <span className="text-sm text-muted-foreground">

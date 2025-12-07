@@ -5,14 +5,12 @@ import {
   repositoryUpdateSchema,
   repositoryQuerySchema,
   parseRepoString,
-  GitHubService,
-  TelegramService,
-  formatMultipleCommits,
-  formatDetailedCommit,
+  UserRole,
 } from '@repo/shared';
 import { validateBody, validateQuery } from '../middleware/validation.middleware.js';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth.middleware.js';
-import { UserRole } from '@repo/shared';
+import { parseIdParam } from '../middleware/parseId.middleware.js';
+import { NotificationService } from '../services/notification.service.js';
 
 export function createRepositoriesRouter(db: DatabaseService): Router {
   const router = Router();
@@ -47,18 +45,9 @@ export function createRepositoriesRouter(db: DatabaseService): Router {
   });
 
   // GET /api/repositories/:id - Get single repository
-  router.get('/:id', async (req: AuthRequest, res, next) => {
+  router.get('/:id', parseIdParam(), async (req: AuthRequest, res, next) => {
     try {
-      const id = parseInt(req.params.id);
-
-      if (isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid repository ID',
-        });
-      }
-
-      const repository = await db.getRepositoryById(id);
+      const repository = await db.getRepositoryById(req.parsedId!);
 
       if (!repository) {
         return res.status(404).json({
@@ -129,21 +118,13 @@ export function createRepositoriesRouter(db: DatabaseService): Router {
   router.patch(
     '/:id',
     requireRole(UserRole.ADMIN, UserRole.USER),
+    parseIdParam(),
     validateBody(repositoryUpdateSchema),
     async (req: AuthRequest, res, next) => {
       try {
-        const id = parseInt(req.params.id);
-
-        if (isNaN(id)) {
-          return res.status(400).json({
-            success: false,
-            error: 'Invalid repository ID',
-          });
-        }
-
         const { branch, notification_interval } = req.body;
 
-        const repository = await db.updateRepository(id, {
+        const repository = await db.updateRepository(req.parsedId!, {
           branch,
           notification_interval,
         });
@@ -160,7 +141,7 @@ export function createRepositoriesRouter(db: DatabaseService): Router {
           userId: req.user!.userId,
           action: 'REPOSITORY_UPDATED',
           resourceType: 'repository',
-          resourceId: id,
+          resourceId: req.parsedId!,
           details: { branch, notification_interval },
           ipAddress: req.ip,
         });
@@ -179,18 +160,10 @@ export function createRepositoriesRouter(db: DatabaseService): Router {
   router.delete(
     '/:id',
     requireRole(UserRole.ADMIN, UserRole.USER),
+    parseIdParam(),
     async (req: AuthRequest, res, next) => {
       try {
-        const id = parseInt(req.params.id);
-
-        if (isNaN(id)) {
-          return res.status(400).json({
-            success: false,
-            error: 'Invalid repository ID',
-          });
-        }
-
-        const success = await db.deleteRepository(id);
+        const success = await db.deleteRepository(req.parsedId!);
 
         if (!success) {
           return res.status(404).json({
@@ -204,7 +177,7 @@ export function createRepositoriesRouter(db: DatabaseService): Router {
           userId: req.user!.userId,
           action: 'REPOSITORY_DELETED',
           resourceType: 'repository',
-          resourceId: id,
+          resourceId: req.parsedId!,
           ipAddress: req.ip,
         });
 
@@ -224,72 +197,18 @@ export function createRepositoriesRouter(db: DatabaseService): Router {
     requireRole(UserRole.ADMIN, UserRole.USER),
     async (req: AuthRequest, res, next) => {
       try {
-        // Get environment variables
-        const githubToken = process.env.GITHUB_TOKEN;
-        const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
-        const telegramChatId = process.env.TELEGRAM_CHAT_ID;
+        const config = NotificationService.validateConfig();
 
-        if (!githubToken || !telegramToken || !telegramChatId) {
+        if (!config) {
           return res.status(500).json({
             success: false,
-            error: 'Missing required environment variables (GITHUB_TOKEN, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)',
+            error:
+              'Missing required environment variables (GITHUB_TOKEN, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)',
           });
         }
 
-        // Initialize services
-        const githubService = new GitHubService(githubToken);
-        const telegramService = new TelegramService(telegramToken, telegramChatId);
-
-        // Get all repositories
-        const result = await db.getRepositories({ page: 1, limit: 100 });
-        const repositories = result.repositories;
-
-        if (repositories.length === 0) {
-          return res.json({
-            success: true,
-            message: 'No repositories found to test',
-            data: {
-              reposProcessed: 0,
-              messagesSent: 0,
-              errors: [],
-            },
-          });
-        }
-
-        const results = {
-          reposProcessed: 0,
-          messagesSent: 0,
-          errors: [] as Array<{ repo: string; error: string }>,
-        };
-
-        // Process each repository
-        for (const repo of repositories) {
-          try {
-            // Fetch latest 5 commits
-            const commits = await githubService.fetchLatestCommits(repo.repo_string, 5);
-
-            if (commits.length > 0) {
-              // Format and send notification
-              let message: string;
-              if (commits.length === 1) {
-                message = formatDetailedCommit(commits[0], repo.repo_string);
-              } else {
-                message = formatMultipleCommits(commits, repo.repo_string);
-              }
-
-              await telegramService.sendMessage(message);
-              results.messagesSent++;
-            }
-
-            results.reposProcessed++;
-          } catch (error) {
-            console.error(`Error processing ${repo.repo_string}:`, error);
-            results.errors.push({
-              repo: repo.repo_string,
-              error: error instanceof Error ? error.message : 'Unknown error',
-            });
-          }
-        }
+        const notificationService = new NotificationService(db, config);
+        const results = await notificationService.testNotifications();
 
         // Log audit
         await db.createAuditLog({
