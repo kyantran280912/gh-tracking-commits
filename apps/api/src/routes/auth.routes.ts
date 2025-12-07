@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { DatabaseService } from '@repo/database';
 import { loginSchema, registerSchema } from '@repo/shared';
 import { validateBody } from '../middleware/validation.middleware.js';
@@ -37,6 +37,7 @@ export function createAuthRouter(db: DatabaseService): Router {
       });
 
       // Generate JWT token
+      const signOptions: SignOptions = { expiresIn: env.JWT_EXPIRES_IN };
       const token = jwt.sign(
         {
           userId: user.id,
@@ -45,7 +46,7 @@ export function createAuthRouter(db: DatabaseService): Router {
           role: user.role,
         },
         env.JWT_SECRET,
-        { expiresIn: env.JWT_EXPIRES_IN }
+        signOptions
       );
 
       // Log audit

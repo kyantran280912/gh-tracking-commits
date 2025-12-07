@@ -1,0 +1,16 @@
+app = "github-tracker-scripts"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile.scripts"
+
+[env]
+  NODE_ENV = "production"
+  CHECK_INTERVAL_HOURS = "3"
+
+# No HTTP service - this is a worker/cron job
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1

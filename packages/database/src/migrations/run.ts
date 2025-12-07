@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { runMigrations } from './index.js';
+import { runMigrations } from './index';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 

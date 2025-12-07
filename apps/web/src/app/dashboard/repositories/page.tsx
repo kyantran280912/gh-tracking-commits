@@ -88,6 +88,37 @@ export default function RepositoriesPage() {
     },
   });
 
+  // Send commits demo mutation
+  const sendCommitsMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/repositories/${id}/send-commits`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiClient.getToken()}`,
+        },
+      });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: 'Failed to send commits' }));
+        throw new Error(error.error || `HTTP ${res.status}`);
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: 'Commits sent!',
+        description: data.message || `Successfully sent commits to Telegram`,
+        variant: 'default',
+      });
+    },
+    onError: (err: any) => {
+      toast({
+        title: 'Failed to send commits',
+        description: err.message || 'An error occurred',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const handleAddRepo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRepoString.trim()) {
@@ -255,16 +286,27 @@ export default function RepositoriesPage() {
                       {formatDate(repo.created_at)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() =>
-                          handleDeleteRepo(repo.id, repo.repo_string)
-                        }
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => sendCommitsMutation.mutate(repo.id)}
+                          disabled={sendCommitsMutation.isPending}
+                        >
+                          <Send className="mr-2 h-4 w-4" />
+                          {sendCommitsMutation.isPending ? 'Sending...' : 'Send Commits'}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            handleDeleteRepo(repo.id, repo.repo_string)
+                          }
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

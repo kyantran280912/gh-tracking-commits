@@ -1,2 +1,2 @@
-export * from './postgres.service.js';
-export * from './migrations/index.js';
+export * from './postgres.service';
+export * from './migrations';

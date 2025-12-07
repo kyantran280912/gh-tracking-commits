@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'GitHub Commit Tracker Dashboard',
   description: 'Track and manage GitHub commits with real-time notifications',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

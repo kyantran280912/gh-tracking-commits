@@ -32,11 +32,11 @@ async function startServer() {
   // Security middleware
   app.use(helmet());
 
-  // CORS configuration
+  // CORS configuration - Allow all origins
   app.use(
     cors({
-      origin: env.CORS_ORIGIN.split(',').map((origin) => origin.trim()),
-      credentials: true,
+      origin: '*',
+      credentials: false,
     })
   );
 
