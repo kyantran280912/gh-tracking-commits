@@ -1,5 +1,5 @@
 import { Octokit } from 'octokit';
-import { Commit, RepoConfig } from '../types/commit.types.js';
+import { Commit, RepoConfig } from '../types/commit.types';
 
 export class GitHubService {
   private octokit: Octokit;

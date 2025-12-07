@@ -1,20 +1,14 @@
 {
-  "name": "@repo/cli",
+  "name": "@repo/scripts",
   "version": "1.0.0",
-  "description": "CLI tracker for GitHub commits with Telegram notifications",
+  "description": "Background tracking script for GitHub commits with Telegram notifications",
   "type": "module",
   "main": "dist/index.js",
   "private": true,
   "scripts": {
     "dev": "tsx src/index.ts",
-    "dev:clean": "../../scripts/run.sh tsx src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "start:clean": "../../scripts/run.sh node dist/index.js",
-    "track": "tsx src/index.ts",
-    "track:clean": "../../scripts/run.sh tsx src/index.ts",
-    "demo": "tsx ../../examples/demo.ts",
-    "demo:clean": "../../scripts/run.sh tsx ../../examples/demo.ts",
     "type-check": "tsc --noEmit",
     "lint": "echo 'No lint configured yet'"
   },

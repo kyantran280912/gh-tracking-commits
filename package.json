@@ -12,23 +12,19 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
+    "dev:dashboard": "concurrently \"cd apps/api && npm run dev\" \"cd apps/web && npm run dev\"",
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
-    "cli:dev": "turbo run dev --filter=@repo/cli",
-    "cli:build": "turbo run build --filter=@repo/cli",
-    "cli:start": "turbo run start --filter=@repo/cli",
-    "track": "turbo run track --filter=@repo/cli",
-    "track:clean": "turbo run track:clean --filter=@repo/cli",
-    "demo": "turbo run demo --filter=@repo/cli",
-    "demo:clean": "turbo run demo:clean --filter=@repo/cli",
     "test:connection": "tsx scripts/test-connection.ts",
-    "test:clean": "./scripts/run.sh tsx scripts/test-connection.ts",
     "db:setup": "npx tsx scripts/setup-db.ts",
     "db:verify": "npx tsx scripts/verify-db.ts",
-    "dev:tracker": "turbo run dev --filter=@repo/cli",
-    "build:tracker": "turbo run build --filter=@repo/cli"
+    "api:dev": "cd apps/api && npm run dev",
+    "web:dev": "cd apps/web && PORT=3000 npm run dev",
+    "scripts:dev": "cd packages/scripts && npm run dev",
+    "scripts:build": "cd packages/scripts && npm run build",
+    "scripts:start": "cd packages/scripts && npm start"
   },
   "keywords": [
     "github",
@@ -49,6 +45,7 @@
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@types/pg": "^8.15.6",
+    "concurrently": "^9.2.1",
     "tsx": "^4.19.2",
     "turbo": "^2.3.3",
     "typescript": "^5.7.2"

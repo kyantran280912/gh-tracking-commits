@@ -1,5 +1,12 @@
 import { Telegraf } from 'telegraf';
 
+// Retry configuration for Telegram API calls
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  baseDelay: 1000, // 1 second
+  maxDelay: 8000,  // 8 seconds max
+};
+
 export class TelegramService {
   private bot: Telegraf;
   private chatId: string;
@@ -7,6 +14,35 @@ export class TelegramService {
   constructor(token: string, chatId: string) {
     this.bot = new Telegraf(token);
     this.chatId = chatId;
+  }
+
+  /**
+   * Retry with exponential backoff
+   */
+  private async withRetry<T>(
+    operation: () => Promise<T>,
+    context: string
+  ): Promise<T> {
+    let lastError: Error | undefined;
+
+    for (let attempt = 0; attempt < RETRY_CONFIG.maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        if (attempt < RETRY_CONFIG.maxRetries - 1) {
+          const delay = Math.min(
+            RETRY_CONFIG.baseDelay * Math.pow(2, attempt),
+            RETRY_CONFIG.maxDelay
+          );
+          console.log(`Retry ${attempt + 1}/${RETRY_CONFIG.maxRetries} for ${context} in ${delay}ms...`);
+          await this.delay(delay);
+        }
+      }
+    }
+
+    throw lastError;
   }
 
   /**
@@ -43,14 +79,17 @@ export class TelegramService {
   }
 
   /**
-   * Send notification with error handling
+   * Send notification with retry and error handling
    */
   async sendNotification(message: string): Promise<boolean> {
     try {
-      await this.sendMessage(message);
+      await this.withRetry(
+        () => this.sendMessage(message),
+        'sendNotification'
+      );
       return true;
     } catch (error) {
-      console.error('❌ Failed to send notification');
+      console.error('❌ Failed to send notification after retries');
       return false;
     }
   }

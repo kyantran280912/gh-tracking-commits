@@ -1,5 +1,5 @@
-import { DbCommit, DbRepository } from './commit.types.js';
-import { User } from './auth.types.js';
+import { DbCommit, DbRepository } from './commit.types';
+import { User } from './auth.types';
 
 // Generic API response
 export interface ApiResponse<T = any> {

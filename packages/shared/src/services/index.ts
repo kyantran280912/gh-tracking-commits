@@ -1,2 +1,2 @@
-export { GitHubService } from './github.service.js';
-export { TelegramService } from './telegram.service.js';
+export { GitHubService } from './github.service';
+export { TelegramService } from './telegram.service';

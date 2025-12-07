@@ -1,4 +1,9 @@
-import { Commit } from '../types/commit.types.js';
+import { Commit } from '../types/commit.types';
+
+// Configuration for message formatting
+const FORMAT_CONFIG = {
+  COMMITS_PER_MESSAGE: 5,  // Commits per Telegram message chunk
+};
 
 /**
  * Escape HTML special characters for Telegram
@@ -27,13 +32,15 @@ export function formatRepoDisplay(repoString: string): string {
  * Format a single commit notification
  */
 export function formatSingleCommit(commit: Commit, repoString: string): string {
-  const shortSha = commit.sha.substring(0, 7);
-  const commitUrl = commit.html_url;
-  const author = commit.commit.author.name;
-  const message = commit.commit.message.split('\n')[0]; // First line only
-  const date = new Date(commit.commit.author.date).toLocaleString('vi-VN', {
-    timeZone: 'Asia/Ho_Chi_Minh',
-  });
+  const shortSha = commit.sha?.substring(0, 7) ?? 'unknown';
+  const commitUrl = commit.html_url ?? '#';
+  const author = commit.commit?.author?.name ?? 'Unknown Author';
+  const message = commit.commit?.message?.split('\n')[0] ?? 'No message'; // First line only
+  const date = commit.commit?.author?.date
+    ? new Date(commit.commit.author.date).toLocaleString('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+      })
+    : 'Unknown date';
   const displayRepo = formatRepoDisplay(repoString);
 
   return `
@@ -51,14 +58,16 @@ export function formatSingleCommit(commit: Commit, repoString: string): string {
  * Format a detailed commit notification
  */
 export function formatDetailedCommit(commit: Commit, repoString: string): string {
-  const shortSha = commit.sha.substring(0, 7);
-  const commitUrl = commit.html_url;
-  const author = commit.commit.author.name;
-  const message = commit.commit.message;
+  const shortSha = commit.sha?.substring(0, 7) ?? 'unknown';
+  const commitUrl = commit.html_url ?? '#';
+  const author = commit.commit?.author?.name ?? 'Unknown Author';
+  const message = commit.commit?.message ?? 'No message';
   const [title, ...bodyLines] = message.split('\n');
-  const date = new Date(commit.commit.author.date).toLocaleString('vi-VN', {
-    timeZone: 'Asia/Ho_Chi_Minh',
-  });
+  const date = commit.commit?.author?.date
+    ? new Date(commit.commit.author.date).toLocaleString('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+      })
+    : 'Unknown date';
   const displayRepo = formatRepoDisplay(repoString);
 
   let notification = `
@@ -116,10 +125,10 @@ export function formatMultipleCommits(commits: Commit[], repoString: string): st
 
   // Show first 5 commits
   commits.slice(0, 5).forEach((commit, index) => {
-    const shortSha = commit.sha.substring(0, 7);
-    const title = commit.commit.message.split('\n')[0];
-    const author = commit.commit.author.name;
-    const commitUrl = commit.html_url;
+    const shortSha = commit.sha?.substring(0, 7) ?? 'unknown';
+    const title = commit.commit?.message?.split('\n')[0] ?? 'No message';
+    const author = commit.commit?.author?.name ?? 'Unknown';
+    const commitUrl = commit.html_url ?? '#';
 
     message += `${index + 1}. <b>${escapeHtml(title)}</b>\n   by ${escapeHtml(author)} • <a href="${commitUrl}">${shortSha}</a>\n\n`;
   });
@@ -144,24 +153,82 @@ export function formatMultipleCommits(commits: Commit[], repoString: string): st
 }
 
 /**
+ * Format commits into array of messages (chunked for Telegram limit)
+ * - Each message shows "Session có [total] commits"
+ * - Numbering is continuous across messages (1-30, not 1-5, 1-5, 1-5)
+ */
+export function formatMultipleCommitsChunked(
+  commits: Commit[],
+  repoString: string
+): string[] {
+  const totalCommits = commits.length;
+  const displayRepo = formatRepoDisplay(repoString);
+  const messages: string[] = [];
+
+  // Extract base repo path (without branch) for URL
+  const baseRepo = repoString.includes(':') ? repoString.split(':')[0] : repoString;
+  const repoUrl = `https://github.com/${baseRepo}`;
+
+  // Split commits into chunks
+  for (let i = 0; i < commits.length; i += FORMAT_CONFIG.COMMITS_PER_MESSAGE) {
+    const chunk = commits.slice(i, i + FORMAT_CONFIG.COMMITS_PER_MESSAGE);
+    const startIndex = i + 1;
+    const endIndex = Math.min(i + FORMAT_CONFIG.COMMITS_PER_MESSAGE, totalCommits);
+
+    // Header with session context
+    let message = `📢 <b>Session có ${totalCommits} commits</b> trong <a href="${repoUrl}">${escapeHtml(displayRepo)}</a>\n`;
+    message += `📋 Hiển thị: ${startIndex}-${endIndex}/${totalCommits}\n\n`;
+
+    // Format each commit with global index (continuous numbering)
+    chunk.forEach((commit, idx) => {
+      const globalIndex = i + idx + 1; // Continuous: 1, 2, 3... not reset each chunk
+      const shortSha = commit.sha?.substring(0, 7) ?? 'unknown';
+      const title = commit.commit?.message?.split('\n')[0] ?? 'No message';
+      const author = commit.commit?.author?.name ?? 'Unknown';
+      const commitUrl = commit.html_url ?? '#';
+
+      message += `<b>${globalIndex}.</b> ${escapeHtml(title)}\n`;
+      message += `   👤 ${escapeHtml(author)} • <a href="${commitUrl}">${shortSha}</a>\n\n`;
+    });
+
+    // Footer with timestamp
+    const notificationTime = new Date().toLocaleString('vi-VN', {
+      timeZone: 'Asia/Ho_Chi_Minh',
+      hour: '2-digit',
+      minute: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+    });
+    message += `<i>🕐 ${notificationTime}</i>`;
+
+    messages.push(message.trim());
+  }
+
+  return messages;
+}
+
+/**
  * Format commits by repository
+ * - Single commit: detailed format (1 message)
+ * - Multiple commits: chunked format (split into multiple messages)
  */
 export function formatCommitsByRepo(commitsMap: Map<string, Commit[]>): string[] {
-  const messages: string[] = [];
+  const allMessages: string[] = [];
 
   for (const [repoString, commits] of commitsMap.entries()) {
     if (commits.length === 0) continue;
 
     if (commits.length === 1) {
       // Single commit - use detailed format
-      messages.push(formatDetailedCommit(commits[0], repoString));
+      allMessages.push(formatDetailedCommit(commits[0], repoString));
     } else {
-      // Multiple commits - use summary format
-      messages.push(formatMultipleCommits(commits, repoString));
+      // Multiple commits - use chunked format (split into multiple messages)
+      const chunkedMessages = formatMultipleCommitsChunked(commits, repoString);
+      allMessages.push(...chunkedMessages);
     }
   }
 
-  return messages;
+  return allMessages;
 }
 
 /**

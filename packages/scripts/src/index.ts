@@ -1,10 +1,34 @@
 import { loadConfig } from './config/env.js';
-import { GitHubService } from './services/github.service.js';
-import { TelegramService } from './services/telegram.service.js';
+import { GitHubService, TelegramService, formatCommitsByRepo, Commit } from '@repo/shared';
 import { StorageService } from './services/storage.service.js';
 import { PostgresStorageService } from './services/postgres-storage.service.js';
-import { formatCommitsByRepo } from './utils/formatter.js';
-import { Commit } from '@repo/shared/types';
+
+// Configuration constants
+const CONFIG = {
+  MESSAGE_DELAY_MS: 500,
+  LOW_RATE_LIMIT_THRESHOLD: 10,
+  CLEANUP_DAYS: 30,
+  DEFAULT_FETCH_HOURS: 24,
+};
+
+// Global storage reference for graceful shutdown
+let storage: StorageService | PostgresStorageService | null = null;
+
+// Graceful shutdown handler
+async function gracefulShutdown(signal: string) {
+  console.log(`\n${signal} received. Cleaning up...`);
+
+  if (storage instanceof PostgresStorageService) {
+    await storage.close();
+    console.log('Database connection closed.');
+  }
+
+  process.exit(0);
+}
+
+// Register signal handlers
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 async function main() {
   console.log('🚀 Starting GitHub Commit Tracker...\n');
@@ -18,9 +42,9 @@ async function main() {
     // Initialize services
     // Use PostgreSQL if DATABASE_URL is provided, otherwise fallback to lowdb
     const usePostgres = !!config.DATABASE_URL;
-    const storage = usePostgres ? new PostgresStorageService() : new StorageService();
-    const github = new GitHubService();
-    const telegram = new TelegramService();
+    storage = usePostgres ? new PostgresStorageService() : new StorageService();
+    const github = new GitHubService(config.GITHUB_TOKEN);
+    const telegram = new TelegramService(config.TELEGRAM_BOT_TOKEN, config.TELEGRAM_CHAT_ID);
 
     await storage.initialize();
     console.log(`✅ Storage initialized (using ${usePostgres ? 'PostgreSQL' : 'lowdb'})\n`);
@@ -37,7 +61,7 @@ async function main() {
     console.log(`📊 GitHub API Rate Limit: ${rateLimit.remaining}/${rateLimit.limit} remaining`);
     console.log(`   Resets at: ${rateLimit.reset.toLocaleString('vi-VN')}\n`);
 
-    if (rateLimit.remaining < 10) {
+    if (rateLimit.remaining < CONFIG.LOW_RATE_LIMIT_THRESHOLD) {
       console.warn('⚠️  Low rate limit remaining. Consider waiting until reset.\n');
     }
 
@@ -49,7 +73,7 @@ async function main() {
     // Calculate the "since" timestamp for fetching commits
     // Use last check time, or 24 hours ago if this is the first run
     const sinceTime = lastCheckTime === new Date(0).toISOString()
-      ? new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      ? new Date(Date.now() - CONFIG.DEFAULT_FETCH_HOURS * 60 * 60 * 1000).toISOString()
       : lastCheckTime;
 
     console.log(`🔍 Fetching commits since: ${new Date(sinceTime).toLocaleString('vi-VN')}\n`);
@@ -89,7 +113,7 @@ async function main() {
       for (const message of messages) {
         await telegram.sendNotification(message);
         // Small delay between messages to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, CONFIG.MESSAGE_DELAY_MS));
       }
 
       // Mark all new commits as notified
@@ -110,11 +134,11 @@ async function main() {
             allCommitsData.push({
               sha: commit.sha,
               repoString,
-              authorName: commit.commit.author.name,
-              authorEmail: commit.commit.author.email,
-              message: commit.commit.message,
-              commitDate: commit.commit.author.date,
-              htmlUrl: commit.html_url,
+              authorName: commit.commit?.author?.name ?? 'Unknown',
+              authorEmail: commit.commit?.author?.email ?? '',
+              message: commit.commit?.message ?? 'No message',
+              commitDate: commit.commit?.author?.date ?? new Date().toISOString(),
+              htmlUrl: commit.html_url ?? '#',
             });
           }
         }
@@ -139,8 +163,8 @@ async function main() {
     await storage.updateLastCheckTime(now);
     console.log(`✅ Updated last check time: ${new Date(now).toLocaleString('vi-VN')}\n`);
 
-    // Cleanup old commits (keep last 30 days)
-    await storage.cleanupOldCommits(30);
+    // Cleanup old commits (keep last N days)
+    await storage.cleanupOldCommits(CONFIG.CLEANUP_DAYS);
 
     console.log('✅ Tracking completed successfully!');
     console.log(`📊 Summary: ${totalNewCommits} new commit(s) from ${config.GITHUB_REPOS.length} repository(ies)\n`);
@@ -153,6 +177,12 @@ async function main() {
       console.error(`\n   Stack trace:\n   ${error.stack}\n`);
     } else {
       console.error('   Unknown error:', error);
+    }
+
+    // Cleanup before exit
+    if (storage instanceof PostgresStorageService) {
+      await storage.close();
+      console.log('Database connection closed.');
     }
 
     process.exit(1);

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserRole } from '../types/auth.types.js';
+import { UserRole } from '../types/auth.types';
 
 export const loginSchema = z.object({
   email: z.string().email('Invalid email format'),

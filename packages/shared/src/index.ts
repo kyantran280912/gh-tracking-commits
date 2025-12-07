@@ -1,11 +1,11 @@
 // Export all types
-export * from './types/index.js';
+export * from './types';
 
 // Export all schemas
-export * from './schemas/index.js';
+export * from './schemas';
 
 // Export all utils
-export * from './utils/index.js';
+export * from './utils';
 
 // Export all services
-export * from './services/index.js';
+export * from './services';

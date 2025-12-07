@@ -1,3 +1,3 @@
-export * from './auth.schemas.js';
-export * from './repository.schemas.js';
-export * from './commit.schemas.js';
+export * from './auth.schemas';
+export * from './repository.schemas';
+export * from './commit.schemas';

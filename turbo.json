@@ -18,30 +18,6 @@
     },
     "test": {
       "dependsOn": ["^test"]
-    },
-    "track": {
-      "cache": false,
-      "dependsOn": ["^build"]
-    },
-    "track:clean": {
-      "cache": false,
-      "dependsOn": ["^build"]
-    },
-    "demo": {
-      "cache": false,
-      "dependsOn": ["^build"]
-    },
-    "demo:clean": {
-      "cache": false,
-      "dependsOn": ["^build"]
-    },
-    "start": {
-      "cache": false,
-      "dependsOn": ["build"]
-    },
-    "start:clean": {
-      "cache": false,
-      "dependsOn": ["build"]
     }
   }
 }

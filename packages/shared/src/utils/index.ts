@@ -120,4 +120,4 @@ export function generateRandomString(length: number): string {
 }
 
 // Export formatter functions
-export * from './formatter.js';
+export * from './formatter';

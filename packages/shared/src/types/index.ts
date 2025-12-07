@@ -1,3 +1,3 @@
-export * from './commit.types.js';
-export * from './auth.types.js';
-export * from './api.types.js';
+export * from './commit.types';
+export * from './auth.types';
+export * from './api.types';

@@ -15,7 +15,7 @@ const envSchema = z.object({
     .default('3')
     .transform((val) => parseInt(val, 10)),
   DB_PATH: z.string().optional().default('./db.json'),
-  DATABASE_URL: z.string().optional(), // PostgreSQL connection string
+  DATABASE_URL: z.string().optional(),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
