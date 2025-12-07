@@ -3,8 +3,14 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+
+const ScheduleInfo = dynamic(
+  () => import('@/components/schedule-info').then((mod) => mod.ScheduleInfo),
+  { ssr: false }
+);
 import {
   LayoutDashboard,
   GitBranch,
@@ -42,23 +48,27 @@ const navigation = [
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAuthenticated, isLoading, logout, fetchUser } = useAuth();
+  const { user, isAuthenticated, isLoading, isHydrated, logout, fetchUser } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
+    // Wait for hydration before checking auth
+    if (!isHydrated) return;
+
     if (!isLoading && !isAuthenticated) {
       router.push('/login');
     } else if (isAuthenticated && !user) {
       fetchUser();
     }
-  }, [isAuthenticated, isLoading, user, router, fetchUser]);
+  }, [isAuthenticated, isLoading, isHydrated, user, router, fetchUser]);
 
   const handleLogout = async () => {
     await logout();
     router.push('/login');
   };
 
-  if (isLoading || !isAuthenticated) {
+  // Show loading during hydration or auth check
+  if (!isHydrated || isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -117,6 +127,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
           </div>
+
+          {/* Schedule Info */}
+          <ScheduleInfo />
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
