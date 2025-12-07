@@ -46,6 +46,11 @@ export interface DbRepository {
   repo: string;
   branch: string | null;
   last_check_time: Date;
+  notification_interval: number; // 1, 2, 3, 6, 12, 24 hours
+  next_check_time: Date | null;
   created_at: Date;
   updated_at: Date;
 }
+
+export const VALID_NOTIFICATION_INTERVALS = [1, 2, 3, 6, 12, 24] as const;
+export type NotificationInterval = (typeof VALID_NOTIFICATION_INTERVALS)[number];

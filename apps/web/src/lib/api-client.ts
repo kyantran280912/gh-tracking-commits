@@ -147,7 +147,10 @@ class ApiClient {
     });
   }
 
-  async updateRepository(id: number, data: { branch?: string }) {
+  async updateRepository(
+    id: number,
+    data: { branch?: string; notification_interval?: number }
+  ) {
     return this.request<ApiResponse<DbRepository>>(`/api/repositories/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),

@@ -124,14 +124,16 @@ export class DatabaseService {
     owner: string;
     repo: string;
     branch: string | null;
+    notificationInterval?: number;
   }): Promise<DbRepository> {
     await this.initialize();
 
+    const interval = data.notificationInterval || 3;
     const result = await this.pool.query(
-      `INSERT INTO repositories (repo_string, owner, repo, branch)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO repositories (repo_string, owner, repo, branch, notification_interval, next_check_time)
+       VALUES ($1, $2, $3, $4, $5, NOW() + ($5 * INTERVAL '1 hour'))
        RETURNING *`,
-      [data.repoString, data.owner, data.repo, data.branch]
+      [data.repoString, data.owner, data.repo, data.branch, interval]
     );
 
     return result.rows[0];
@@ -139,7 +141,7 @@ export class DatabaseService {
 
   async updateRepository(
     id: number,
-    data: { branch?: string }
+    data: { branch?: string; notification_interval?: number }
   ): Promise<DbRepository | null> {
     await this.initialize();
 
@@ -150,6 +152,16 @@ export class DatabaseService {
     if (data.branch !== undefined) {
       updates.push(`branch = $${paramIndex++}`);
       params.push(data.branch);
+    }
+
+    if (data.notification_interval !== undefined) {
+      updates.push(`notification_interval = $${paramIndex++}`);
+      params.push(data.notification_interval);
+      // Recalculate next_check_time based on new interval
+      updates.push(
+        `next_check_time = COALESCE(last_check_time, NOW()) + ($${paramIndex++} * INTERVAL '1 hour')`
+      );
+      params.push(data.notification_interval);
     }
 
     if (updates.length === 0) {
@@ -174,6 +186,67 @@ export class DatabaseService {
     );
 
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // ============================================
+  // SCHEDULER OPERATIONS
+  // ============================================
+
+  /**
+   * Get repositories that are due for notification check
+   * Uses index on next_check_time for efficient query
+   */
+  async getRepositoriesDueForNotification(): Promise<DbRepository[]> {
+    await this.initialize();
+
+    const result = await this.pool.query(
+      `SELECT * FROM repositories
+       WHERE next_check_time <= NOW()
+       ORDER BY next_check_time ASC`
+    );
+
+    return result.rows;
+  }
+
+  /**
+   * Update next_check_time after processing a repository
+   */
+  async updateNextCheckTime(id: number): Promise<void> {
+    await this.initialize();
+
+    await this.pool.query(
+      `UPDATE repositories
+       SET next_check_time = NOW() + (notification_interval * INTERVAL '1 hour'),
+           last_check_time = NOW()
+       WHERE id = $1`,
+      [id]
+    );
+  }
+
+  /**
+   * Acquire distributed lock for scheduler
+   * Uses PostgreSQL advisory lock to prevent multiple instances running simultaneously
+   * Returns true if lock acquired, false if another instance holds the lock
+   */
+  async acquireSchedulerLock(): Promise<boolean> {
+    await this.initialize();
+
+    const result = await this.pool.query(
+      "SELECT pg_try_advisory_lock(hashtext('notification_scheduler'))"
+    );
+
+    return result.rows[0].pg_try_advisory_lock;
+  }
+
+  /**
+   * Release distributed lock for scheduler
+   */
+  async releaseSchedulerLock(): Promise<void> {
+    await this.initialize();
+
+    await this.pool.query(
+      "SELECT pg_advisory_unlock(hashtext('notification_scheduler'))"
+    );
   }
 
   // ============================================

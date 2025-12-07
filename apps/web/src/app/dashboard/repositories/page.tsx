@@ -119,6 +119,44 @@ export default function RepositoriesPage() {
     },
   });
 
+  // Update notification interval mutation with optimistic update
+  const updateIntervalMutation = useMutation({
+    mutationFn: ({ id, interval }: { id: number; interval: number }) =>
+      apiClient.updateRepository(id, { notification_interval: interval }),
+    onMutate: async ({ id, interval }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['repositories'] });
+
+      // Snapshot the previous value
+      const previousRepos = queryClient.getQueryData(['repositories', search]);
+
+      // Optimistically update
+      queryClient.setQueryData(['repositories', search], (old: any) => ({
+        ...old,
+        data: old?.data?.map((repo: any) =>
+          repo.id === id ? { ...repo, notification_interval: interval } : repo
+        ),
+      }));
+
+      return { previousRepos };
+    },
+    onError: (err: any, variables, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['repositories', search], context?.previousRepos);
+      toast({
+        title: 'Failed to update interval',
+        description: err.message || 'An error occurred',
+        variant: 'destructive',
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Interval updated',
+        description: 'Notification interval has been updated successfully',
+      });
+    },
+  });
+
   const handleAddRepo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRepoString.trim()) {
@@ -254,6 +292,7 @@ export default function RepositoriesPage() {
                 <TableRow>
                   <TableHead>Repository</TableHead>
                   <TableHead>Branch</TableHead>
+                  <TableHead>Interval</TableHead>
                   <TableHead>Last Check</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -276,6 +315,26 @@ export default function RepositoriesPage() {
                       <code className="px-2 py-1 bg-muted rounded text-xs">
                         {repo.branch || 'default'}
                       </code>
+                    </TableCell>
+                    <TableCell>
+                      <select
+                        value={repo.notification_interval || 3}
+                        onChange={(e) =>
+                          updateIntervalMutation.mutate({
+                            id: repo.id,
+                            interval: parseInt(e.target.value),
+                          })
+                        }
+                        disabled={updateIntervalMutation.isPending}
+                        className="px-2 py-1 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      >
+                        <option value={1}>1h</option>
+                        <option value={2}>2h</option>
+                        <option value={3}>3h</option>
+                        <option value={6}>6h</option>
+                        <option value={12}>12h</option>
+                        <option value={24}>24h</option>
+                      </select>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {repo.last_check_time

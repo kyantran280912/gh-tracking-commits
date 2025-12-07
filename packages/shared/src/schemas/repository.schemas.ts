@@ -20,8 +20,20 @@ export const repositoryCreateSchema = z.object({
     ),
 });
 
+const VALID_INTERVALS = [1, 2, 3, 6, 12, 24] as const;
+
 export const repositoryUpdateSchema = z.object({
   branch: z.string().min(1, 'Branch name cannot be empty').optional(),
+  notification_interval: z
+    .union([
+      // Accept string from form/dropdown (e.g., "3")
+      z.enum(['1', '2', '3', '6', '12', '24']).transform(Number),
+      // Accept number directly from API
+      z.number().refine((n) => VALID_INTERVALS.includes(n as (typeof VALID_INTERVALS)[number]), {
+        message: 'Invalid interval. Must be 1, 2, 3, 6, 12, or 24 hours',
+      }),
+    ])
+    .optional(),
 });
 
 export const repositoryQuerySchema = z.object({

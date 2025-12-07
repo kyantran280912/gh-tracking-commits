@@ -122,8 +122,15 @@ export class GitHubService {
 
   /**
    * Fetch latest commits from a repository
+   * @param repoString - Repository string (owner/repo or owner/repo:branch)
+   * @param count - Number of commits to fetch (default: 10)
+   * @param since - ISO 8601 date string to fetch commits after this date
    */
-  async fetchLatestCommits(repoString: string, count: number = 10): Promise<Commit[]> {
+  async fetchLatestCommits(
+    repoString: string,
+    count: number = 10,
+    since?: string
+  ): Promise<Commit[]> {
     const { owner, repo, branch } = this.parseRepoString(repoString);
 
     try {
@@ -136,6 +143,11 @@ export class GitHubService {
       // Add branch/sha parameter if specified
       if (branch) {
         params.sha = branch;
+      }
+
+      // Add since parameter if specified
+      if (since) {
+        params.since = since;
       }
 
       const response = await this.octokit.rest.repos.listCommits(params);

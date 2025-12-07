@@ -11,6 +11,7 @@ import { createRepositoriesRouter } from './routes/repositories.routes.js';
 import { createCommitsRouter } from './routes/commits.routes.js';
 import { createStatsRouter } from './routes/stats.routes.js';
 import { createHealthRouter } from './routes/health.routes.js';
+import { SchedulerService } from './services/scheduler.service.js';
 
 async function startServer() {
   const env = getEnv();
@@ -28,6 +29,21 @@ async function startServer() {
     console.error('❌ Failed to connect to database:', error);
     process.exit(1);
   }
+
+  // Initialize scheduler service
+  const scheduler = new SchedulerService(
+    db,
+    env.GITHUB_TOKEN || '',
+    env.TELEGRAM_BOT_TOKEN || '',
+    env.TELEGRAM_CHAT_ID || '',
+    {
+      pollingIntervalMs: 5 * 60 * 1000, // 5 minutes
+      enabled: env.NODE_ENV === 'production' || env.SCHEDULER_ENABLED === 'true',
+    }
+  );
+
+  // Start scheduler
+  await scheduler.start();
 
   // Security middleware
   app.use(helmet());
@@ -97,12 +113,14 @@ async function startServer() {
   // Graceful shutdown
   process.on('SIGTERM', async () => {
     console.log('\n🛑 SIGTERM received, shutting down gracefully...');
+    await scheduler.stop();
     await db.close();
     process.exit(0);
   });
 
   process.on('SIGINT', async () => {
     console.log('\n🛑 SIGINT received, shutting down gracefully...');
+    await scheduler.stop();
     await db.close();
     process.exit(0);
   });

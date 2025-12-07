@@ -35,6 +35,9 @@ COPY --from=builder /app/apps/api/package.json ./apps/api/
 ENV NODE_ENV=production
 ENV PORT=3001
 
+# Install tsx for runtime TypeScript support (shared packages export .ts files)
+RUN npm install -g tsx
+
 WORKDIR /app/apps/api
 EXPOSE 3001
-CMD ["node", "dist/index.js"]
+CMD ["tsx", "dist/index.js"]

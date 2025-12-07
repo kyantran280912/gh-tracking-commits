@@ -86,11 +86,40 @@ VALUES (
 ) ON CONFLICT (email) DO NOTHING;
 `;
 
+const NOTIFICATION_INTERVAL_SQL = `
+-- Migration: Add per-repository notification interval support
+
+-- Add notification_interval column with CHECK constraint
+ALTER TABLE repositories
+ADD COLUMN IF NOT EXISTS notification_interval INTEGER DEFAULT 3
+CONSTRAINT valid_notification_interval
+CHECK (notification_interval IN (1, 2, 3, 6, 12, 24));
+
+-- Add next_check_time column for efficient query (index-friendly)
+ALTER TABLE repositories
+ADD COLUMN IF NOT EXISTS next_check_time TIMESTAMP WITH TIME ZONE;
+
+-- Initialize next_check_time for existing repos
+UPDATE repositories
+SET next_check_time = COALESCE(last_check_time, NOW()) + (notification_interval * INTERVAL '1 hour')
+WHERE next_check_time IS NULL;
+
+-- Create partial index for efficient due notification query
+CREATE INDEX IF NOT EXISTS idx_repos_next_check_time
+ON repositories(next_check_time)
+WHERE next_check_time IS NOT NULL;
+`;
+
 export const migrations: Migration[] = [
   {
     id: '001',
     name: 'auth_tables',
     sql: AUTH_TABLES_SQL,
+  },
+  {
+    id: '003',
+    name: 'notification_interval',
+    sql: NOTIFICATION_INTERVAL_SQL,
   },
 ];
 

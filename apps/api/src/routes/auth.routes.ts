@@ -37,7 +37,6 @@ export function createAuthRouter(db: DatabaseService): Router {
       });
 
       // Generate JWT token
-      const signOptions: SignOptions = { expiresIn: env.JWT_EXPIRES_IN };
       const token = jwt.sign(
         {
           userId: user.id,
@@ -46,7 +45,7 @@ export function createAuthRouter(db: DatabaseService): Router {
           role: user.role,
         },
         env.JWT_SECRET,
-        signOptions
+        { expiresIn: env.JWT_EXPIRES_IN } as SignOptions
       );
 
       // Log audit
@@ -106,7 +105,7 @@ export function createAuthRouter(db: DatabaseService): Router {
           role: user.role,
         },
         env.JWT_SECRET,
-        { expiresIn: env.JWT_EXPIRES_IN }
+        { expiresIn: env.JWT_EXPIRES_IN } as SignOptions
       );
 
       // Update last login

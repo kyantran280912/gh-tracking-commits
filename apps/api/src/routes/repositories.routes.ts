@@ -141,9 +141,12 @@ export function createRepositoriesRouter(db: DatabaseService): Router {
           });
         }
 
-        const { branch } = req.body;
+        const { branch, notification_interval } = req.body;
 
-        const repository = await db.updateRepository(id, { branch });
+        const repository = await db.updateRepository(id, {
+          branch,
+          notification_interval,
+        });
 
         if (!repository) {
           return res.status(404).json({
@@ -158,7 +161,7 @@ export function createRepositoriesRouter(db: DatabaseService): Router {
           action: 'REPOSITORY_UPDATED',
           resourceType: 'repository',
           resourceId: id,
-          details: { branch },
+          details: { branch, notification_interval },
           ipAddress: req.ip,
         });
 
