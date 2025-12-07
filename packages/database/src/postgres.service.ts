@@ -131,7 +131,7 @@ export class DatabaseService {
     const interval = data.notificationInterval || 3;
     const result = await this.pool.query(
       `INSERT INTO repositories (repo_string, owner, repo, branch, notification_interval, next_check_time)
-       VALUES ($1, $2, $3, $4, $5, NOW() + ($5 * INTERVAL '1 hour'))
+       VALUES ($1, $2, $3, $4, $5, NOW() + ($5::integer * INTERVAL '1 hour'))
        RETURNING *`,
       [data.repoString, data.owner, data.repo, data.branch, interval]
     );
@@ -159,7 +159,7 @@ export class DatabaseService {
       params.push(data.notification_interval);
       // Recalculate next_check_time based on new interval
       updates.push(
-        `next_check_time = COALESCE(last_check_time, NOW()) + ($${paramIndex++} * INTERVAL '1 hour')`
+        `next_check_time = COALESCE(last_check_time, NOW()) + ($${paramIndex++}::integer * INTERVAL '1 hour')`
       );
       params.push(data.notification_interval);
     }
