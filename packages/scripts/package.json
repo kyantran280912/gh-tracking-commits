@@ -1,0 +1,29 @@
+{
+  "name": "@repo/scripts",
+  "version": "1.0.0",
+  "description": "Background tracking script for GitHub commits with Telegram notifications",
+  "type": "module",
+  "main": "dist/index.js",
+  "private": true,
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit",
+    "lint": "echo 'No lint configured yet'"
+  },
+  "dependencies": {
+    "@repo/shared": "*",
+    "@repo/database": "*",
+    "dotenv": "^16.4.7",
+    "lowdb": "^7.0.1",
+    "octokit": "^4.0.2",
+    "telegraf": "^4.16.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

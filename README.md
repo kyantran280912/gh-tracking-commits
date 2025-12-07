@@ -4,13 +4,15 @@ Automatically track new commits from GitHub repositories and send notifications 
 
 ## 📚 Quick Links
 
-- **⚡ [QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
-- **📖 [SETUP.md](SETUP.md)** - Detailed step-by-step guide
+- **⚡ [Quick Start](docs/quickstart.md)** - Get started in 5 minutes
+- **📖 [Setup Guide](docs/setup.md)** - Choose CLI or Dashboard setup
+- **🎬 [Demo Guide](docs/demo-guide.md)** - Run demo with test data
 - **🧪 Test Connection**: `npm test`
 
 ## Features
 
 - 🔍 Track commits from one or multiple GitHub repositories
+- 🌿 Track specific branches (e.g., main, develop, testnet)
 - 📱 Send automatic notifications via Telegram Bot
 - ⏰ Run periodically (default: every 3 hours)
 - 💾 Save state to avoid duplicate notifications
@@ -83,20 +85,76 @@ TELEGRAM_CHAT_ID=123456789
 GITHUB_REPOS=facebook/react,microsoft/typescript
 ```
 
+### 📌 Repository Formats & Branch Tracking
+
+You can specify repositories in multiple formats:
+
+**Default Branch Tracking:**
+```env
+# Short format (tracks default branch)
+GITHUB_REPOS=facebook/react,microsoft/typescript
+
+# Full URL (tracks default branch)
+GITHUB_REPOS=https://github.com/facebook/react,https://github.com/microsoft/typescript
+```
+
+**Specific Branch Tracking:**
+```env
+# Short format with branch
+GITHUB_REPOS=facebook/react:main,vercel/next.js:canary
+
+# Full URL with branch
+GITHUB_REPOS=https://github.com/facebook/react/tree/main,https://github.com/vercel/next.js/tree/canary
+```
+
+**Mixed Formats:**
+```env
+# You can mix different formats
+GITHUB_REPOS=facebook/react,microsoft/typescript:main,https://github.com/vercel/next.js/tree/canary
+```
+
+**Important Notes:**
+- Each branch of the same repo is tracked separately
+- Notifications will show the branch name: `repo-name (branch)`
+- For private repos, ensure your GitHub token has `repo` scope (not just `public_repo`)
+
 ## Usage
 
-### Run locally
+### Run CLI Tracker
 
 ```bash
-# Development mode
+# Development mode (run once)
+npm run track
+
+# Or with clean environment
+npm run track:clean
+
+# Run demo with test data
+npm run demo
+
+# Build CLI
+npm run cli:build
+
+# Run built version
+npm run cli:start
+```
+
+### Development Commands
+
+```bash
+# Run all apps in development mode
 npm run dev
 
-# Production mode
+# Build all apps
 npm run build
-npm start
 
-# Run tracker once
-npm run track
+# Type check all packages
+npm run type-check
+
+# CLI-specific commands
+npm run cli:dev        # Run CLI in watch mode
+npm run cli:build      # Build CLI only
+npm run cli:start      # Run built CLI
 ```
 
 ### Deploy to GitHub Actions (Recommended - Free)
@@ -148,25 +206,43 @@ on:
 
 ## Project Structure
 
+This is a **monorepo** managed with **Turborepo** and **npm workspaces**:
+
 ```
 tracking-commit-github/
-├── src/
-│   ├── index.ts                 # Entry point
-│   ├── config/
-│   │   └── env.ts              # Environment validation
-│   ├── services/
-│   │   ├── github.service.ts   # GitHub API logic
-│   │   ├── telegram.service.ts # Telegram notifications
-│   │   └── storage.service.ts  # Database operations
-│   ├── types/
-│   │   ├── commit.types.ts     # Commit data types
-│   │   └── database.types.ts   # Database schema
-│   └── utils/
-│       └── formatter.ts        # Message formatting
-├── .github/
-│   └── workflows/
-│       └── track-commits.yml   # GitHub Actions workflow
-└── db.json                     # State file (auto-generated)
+├── apps/
+│   ├── cli/                     # CLI tracker application
+│   │   ├── src/
+│   │   │   ├── index.ts         # Entry point
+│   │   │   ├── config/env.ts   # Environment validation
+│   │   │   ├── services/        # GitHub, Telegram, Storage
+│   │   │   ├── types/           # CLI-specific types
+│   │   │   └── utils/           # Formatters
+│   │   └── package.json         # @repo/cli
+│   ├── api/                     # Express API server (for dashboard)
+│   └── web/                     # Next.js dashboard
+│
+├── packages/
+│   ├── shared/                  # Shared types & utilities
+│   │   └── src/types/           # Common types (Commit, Repo, etc.)
+│   └── database/                # PostgreSQL service
+│       └── src/postgres.service.ts
+│
+├── scripts/                     # Setup & test scripts
+├── docs/                        # Documentation
+├── examples/                    # Demo files
+├── .github/workflows/           # GitHub Actions
+├── package.json                 # Root workspace config
+└── turbo.json                   # Turborepo config
+```
+
+### Package Dependencies
+
+```
+apps/cli → depends on @repo/shared, @repo/database
+apps/api → depends on @repo/shared, @repo/database
+apps/web → depends on @repo/shared
+packages/database → depends on @repo/shared
 ```
 
 ## Notification Format
@@ -178,8 +254,21 @@ tracking-commit-github/
 
 Message: Fix: resolve memory leak in useEffect
 Author: Dan Abramov
-SHA: a1b2c3d (clickable link)
 Date: 11/24/2025, 10:30:45 AM
+
+View commit a1b2c3d (clickable link)
+```
+
+### Single Commit (with Branch)
+
+```
+🔔 New Commit in vercel/next.js (canary)
+
+Message: feat: add new Router API
+Author: Tim Neutkens
+Date: 11/24/2025, 11:45:30 AM
+
+View commit x1y2z3a (clickable link)
 ```
 
 ### Multiple Commits
@@ -187,13 +276,28 @@ Date: 11/24/2025, 10:30:45 AM
 ```
 📢 5 new commits in facebook/react
 
-1. a1b2c3d Add TypeScript support
-   by Dan Abramov
+1. Add TypeScript support
+   by Dan Abramov • a1b2c3d (clickable)
 
-2. b2c3d4e Fix linting errors
-   by Sophie Alpert
+2. Fix linting errors
+   by Sophie Alpert • b2c3d4e (clickable)
 
 ... and 3 more commits
+```
+
+### Multiple Commits (with Branch)
+
+```
+📢 3 new commits in vercel/next.js (canary)
+
+1. feat: add new Router API
+   by Tim Neutkens • x1y2z3a (clickable)
+
+2. fix: resolve hydration issue
+   by JJ Kasper • a2b3c4d (clickable)
+
+3. docs: update migration guide
+   by Lee Robinson • d4e5f6g (clickable)
 ```
 
 ## Troubleshooting

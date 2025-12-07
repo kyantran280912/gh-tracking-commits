@@ -3,7 +3,26 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(npm run demo:*)",
+      "Bash(node -e:*)",
+      "Bash(tsx -e:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npm test:*)",
+      "Bash(curl -s \"https://api.telegram.org/bot7855673930:AAHTw5gcX_c57kVh9679Qu1XdE61_cJ6ghE/getMe\")",
+      "Bash(python3:*)",
+      "Bash(echo:*)",
+      "Bash(TELEGRAM_BOT_TOKEN=\"7855673930:AAHTw5gcX_c57kVh9679Qu1XdE61_cJ6ghE\" npm test:*)",
+      "Bash(chmod:*)",
+      "Bash(npm run test:clean:*)",
+      "Bash(npm run demo:clean:*)",
+      "Bash(tsx:*)",
+      "Bash(npm run dev:clean:*)",
+      "Bash(mkdir:*)",
+      "Bash(git checkout:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(turbo run:*)",
+      "Bash(npm run cli:build:*)"
     ],
     "deny": [],
     "ask": []

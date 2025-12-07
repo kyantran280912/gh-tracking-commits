@@ -23,6 +23,10 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+.cursor/
 
 # TypeScript
 *.tsbuildinfo
+
+# Turbo
+.turbo/
